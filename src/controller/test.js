@@ -1,7 +1,5 @@
 // @ts-ignore
 
-// This script will be run within the webview itself
-// It cannot access the main VS Code APIs directly.
 (function () {
   const vscode = acquireVsCodeApi();
   const oldState = vscode.getState() || { colors: [] };
@@ -12,8 +10,6 @@
     vscode.postMessage({ type: "showText", value: "button click" });
   });
 
-  // Handle messages sent from the extension to the webview
-  // command
   window.addEventListener("message", (event) => {
     switch (event.data.type) {
       case "addText": {

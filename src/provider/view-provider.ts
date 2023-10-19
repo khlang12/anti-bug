@@ -9,7 +9,10 @@ export class ViewProvider implements vscode.WebviewViewProvider {
   private _cssFile?: string;
   private _scriptFile?: string;
   private _htmlFile?: string;
-
+  private _callback?: (data: { type: string; value: any }) => void;
+  private _data?: {
+    [key: string]: any;
+  };
   constructor({
     extensionUri,
     viewType,
@@ -37,20 +40,12 @@ export class ViewProvider implements vscode.WebviewViewProvider {
 
     // handle message
     webviewView.webview.onDidReceiveMessage((data) => {
-      console.log(data);
-      switch (data.type) {
-        case "showText": {
-          vscode.window.activeTextEditor?.insertSnippet(
-            new vscode.SnippetString(`#${data.value}`)
-          );
-          vscode.window.showInformationMessage(`#${data.value}`);
-          break;
-        }
-        default: {
-          vscode.window.showInformationMessage(`unknown message type`);
-        }
-      }
+      this._callback?.(data);
     });
+  }
+
+  public setFunction(callback: (data: { type: string; value: any }) => void) {
+    this._callback = callback;
   }
 
   public getViewType(): string {
@@ -76,6 +71,10 @@ export class ViewProvider implements vscode.WebviewViewProvider {
     this._cssFile = cssFile;
     this._scriptFile = scriptFile;
     this._htmlFile = htmlFile;
+  }
+
+  public setData(data: { [key: string]: any }) {
+    this._data = data;
   }
 
   public setCss(file: string) {
@@ -133,6 +132,7 @@ export class ViewProvider implements vscode.WebviewViewProvider {
       styleResetUri,
       styleCommonUri,
       styleMainUri,
+      ...this._data,
       cspSource: webview.cspSource,
       nonce,
     });

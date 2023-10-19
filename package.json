@@ -26,6 +26,11 @@
         "category": "antibug",
         "command": "antibug.addText",
         "title": "add Text"
+      },
+      {
+        "category": "antibug",
+        "command": "antibug.resultView",
+        "title": "result View"
       }
     ]
   },
