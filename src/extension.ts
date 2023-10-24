@@ -34,6 +34,8 @@ export function activate(context: vscode.ExtensionContext) {
     htmlFile: "interaction.ejs",
   });
 
+  primaryPanelInteractionProvider.setFunction(interactionListener);
+
   context.subscriptions.push(
     vscode.commands.registerCommand("antibug.test", async () => {
       const trie = await makeTrie(DEFAULT_ACCOUNTS);
@@ -56,4 +58,21 @@ export function activate(context: vscode.ExtensionContext) {
       primaryPanelInteractionProvider
     )
   );
+}
+
+function interactionListener(data: { type: string; value: any }) {
+  switch (data.type) {
+    case "sendEth": {
+      const panel = vscode.window.createWebviewPanel(
+        "resultView", // Identifies the type of the webview. Used internally
+        "Result View", // Title of the panel displayed to the user
+        vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+        {} // Webview options. More on these later.
+      );
+      panel.webview.html = `
+        <div>Test</div>
+      `;
+      break;
+    }
+  }
 }

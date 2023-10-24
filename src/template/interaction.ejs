@@ -8,10 +8,17 @@
 
     <body>
       <div class="test-container">
-        <input type="text" placeholder="Enter your walletAddress" />
-        <input type="text" placeholder="Enter eth price to send" />
-        <button>RUN</button>
-        <button class="test-show-message">show message</button>
+        <input
+          class="input-address"
+          type="text"
+          placeholder="Enter your walletAddress"
+        />
+        <input
+          class="input-eth"
+          type="text"
+          placeholder="Enter eth price to send"
+        />
+        <button class="send-eth">RUN</button>
       </div>
       <%-include('script.ejs') %>
     </body>
