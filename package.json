@@ -25,11 +25,6 @@
       "antibug": [
         {
           "type": "webview",
-          "name": "Deploy",
-          "id": "antibug.primaryPanel.deploy"
-        },
-        {
-          "type": "webview",
           "name": "Interaction",
           "id": "antibug.primaryPanel.interaction"
         }
@@ -45,6 +40,7 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
+    "@types/debug": "^4.1.10",
     "@types/mocha": "^10.0.2",
     "@types/node": "18.x",
     "@types/vscode": "^1.83.0",

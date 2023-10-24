@@ -16,12 +16,21 @@ export class ViewProvider implements vscode.WebviewViewProvider {
   constructor({
     extensionUri,
     viewType,
+    cssFile,
+    scriptFile,
+    htmlFile,
   }: {
     extensionUri: vscode.Uri;
     viewType: string;
+    cssFile?: string;
+    scriptFile?: string;
+    htmlFile?: string;
   }) {
     this._extensionUri = extensionUri;
     this._viewType = viewType;
+    this._cssFile = cssFile;
+    this._scriptFile = scriptFile;
+    this._htmlFile = htmlFile;
   }
 
   public resolveWebviewView(
@@ -36,7 +45,7 @@ export class ViewProvider implements vscode.WebviewViewProvider {
       localResourceRoots: [this._extensionUri],
     };
 
-    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+    webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
     // handle message
     webviewView.webview.onDidReceiveMessage((data) => {
@@ -44,19 +53,8 @@ export class ViewProvider implements vscode.WebviewViewProvider {
     });
   }
 
-  public setFunction(callback: (data: { type: string; value: any }) => void) {
-    this._callback = callback;
-  }
-
   public getViewType(): string {
     return this._viewType;
-  }
-
-  public addText() {
-    if (this._view) {
-      this._view.show?.(true);
-      this._view.webview.postMessage({ type: "addText" });
-    }
   }
 
   public setFiles({
@@ -89,7 +87,11 @@ export class ViewProvider implements vscode.WebviewViewProvider {
     this._htmlFile = file;
   }
 
-  private _getHtmlForWebview(webview: vscode.Webview): string {
+  public setListner(callback: (data: { type: string; value: any }) => void) {
+    this._callback = callback;
+  }
+
+  private getHtmlForWebview(webview: vscode.Webview): string {
     const styleResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "src", "style", "reset.css")
     );
@@ -108,7 +110,7 @@ export class ViewProvider implements vscode.WebviewViewProvider {
     );
 
     const tempalteUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "template")
+      vscode.Uri.joinPath(this._extensionUri, "src", "template", "common")
     ).path;
 
     const htmlUri = webview.asWebviewUri(
@@ -148,7 +150,6 @@ export class ViewProvider implements vscode.WebviewViewProvider {
       }
     );
   }
-
   private getNonce() {
     let text = "";
     const possible =
