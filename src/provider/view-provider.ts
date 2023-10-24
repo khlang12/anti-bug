@@ -107,6 +107,10 @@ export class ViewProvider implements vscode.WebviewViewProvider {
       )
     );
 
+    const tempalteUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "src", "template")
+    ).path;
+
     const htmlUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this._extensionUri,
@@ -127,15 +131,22 @@ export class ViewProvider implements vscode.WebviewViewProvider {
     );
 
     const nonce = this.getNonce();
-    return ejs.render(html, {
-      script,
-      styleResetUri,
-      styleCommonUri,
-      styleMainUri,
-      ...this._data,
-      cspSource: webview.cspSource,
-      nonce,
-    });
+
+    return ejs.render(
+      html,
+      {
+        script,
+        styleResetUri,
+        styleCommonUri,
+        styleMainUri,
+        ...this._data,
+        cspSource: webview.cspSource,
+        nonce,
+      },
+      {
+        views: [tempalteUri],
+      }
+    );
   }
 
   private getNonce() {

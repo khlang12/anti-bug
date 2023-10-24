@@ -9,7 +9,6 @@
   button.addEventListener("click", () => {
     vscode.postMessage({ type: "showText", value: "button click" });
   });
-
   window.addEventListener("message", (event) => {
     switch (event.data.type) {
       case "addText": {
