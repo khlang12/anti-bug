@@ -53,6 +53,8 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@ethereumjs/block": "^5.0.0",
+    "@ethereumjs/blockchain": "^7.0.0",
     "@ethereumjs/common": "^4.0.0",
     "@ethereumjs/evm": "^2.0.0",
     "@ethereumjs/trie": "^6.0.0",
