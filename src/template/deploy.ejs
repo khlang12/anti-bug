@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <html lang="en">
+    <head>
+      <%-include('head.ejs') %>
+      <title>Deploy & Function Interaction</title>
+    </head>
+
+    <body>
+      <div class="test-container">
+        <button class="button-compile">Compile</button>
+        <input
+          class="input-chain"
+          type="text"
+          placeholder="Chain"
+        />
+        <input
+          class="input-address"
+          type="text"
+          placeholder="Address"
+        />
+        <input
+          class="input-gaslimit"
+          type="text"
+          placeholder="Gas Limit"
+        />
+        <input
+          class="input-value"
+          type="text"
+          placeholder="Value"
+        />
+        <input
+          class="input-contract"
+          type="text"
+          placeholder="Contract"
+        />
+        <button class="button-deploy">Deploy</button>
+      </div>
+      <%-include('script.ejs') %>
+    </body>
+  </html>
+</html>
