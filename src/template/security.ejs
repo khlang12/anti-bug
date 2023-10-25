@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <html lang="en">
+    <head>
+      <%-include('head.ejs') %>
+      <title>Security Analysis</title>
+    </head>
+
+    <body>
+      <div class="security-container">
+
+        <p>Applicable Rule</p>
+        <button class="button-rule-add">+</button>
+        <button class="button-rule-remove">-</button>
+        <label><input type="checkbox" name="rule" value="Keyword1">Keyword1</label><br>
+        <label><input type="checkbox" name="rule" value="Keyword2">Keyword2</label><br>
+        <label><input type="checkbox" name="rule" value="Keyword3">Keyword3</label><br>
+
+        <p>Print Type</p>
+        <textarea class="textarea-result-print">print result...</textarea>
+
+        <button class="button-analysis">Analysis</button>
+        <button class="button-auditreport">Audit Report</button>
+
+      </div>
+      <%-include('script.ejs') %>
+    </body>
+  </html>
+</html>
