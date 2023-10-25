@@ -7,19 +7,26 @@
     </head>
 
     <body>
-      <div class="test-container">
+      <form class="send-interaction">
+        <select class="send-interaction__address">
+          <% accounts.forEach(account => { %>
+          <option value="<%= account.privateKey %>">
+            <%= account.address %>(<%= account.balance.toString() %>)
+          </option>
+          <% }); %>
+        </select>
         <input
-          class="input-address"
+          class="send-interaction__to"
           type="text"
           placeholder="Enter your walletAddress"
         />
         <input
-          class="input-eth"
-          type="text"
+          class="send-interaction__eth"
+          type="number"
           placeholder="Enter eth price to send"
         />
-        <button class="send-eth">RUN</button>
-      </div>
+        <button class="send-interaction__send">RUN</button>
+      </form>
       <%-include('script.ejs') %>
     </body>
   </html>

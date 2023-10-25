@@ -1,19 +1,15 @@
 import { Chain, Hardfork, Common } from "@ethereumjs/common";
 import { RunTxResult, VM } from "@ethereumjs/vm";
-import { makeGenesisState } from "../util";
+import { makeGenesisState, privateKeyToAddress } from "../util";
 import { Block } from "@ethereumjs/block";
 import AntibugChain from "./blockchain";
-import {
-  Address,
-  bytesToHex,
-  hexToBytes,
-  publicToAddress,
-} from "@ethereumjs/util";
+import { Address, bytesToHex, hexToBytes } from "@ethereumjs/util";
 import {
   BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
 } from "@ethereumjs/tx";
+import { DEFAULT_ACCOUNTS } from "../util/config";
 
 export default class AntibugNode {
   public common: Common;
@@ -44,7 +40,7 @@ export default class AntibugNode {
     const vm = await VM.create({
       common,
       activatePrecompiles: true,
-      genesisState: makeGenesisState(),
+      genesisState: makeGenesisState(DEFAULT_ACCOUNTS),
     });
 
     // 실제 vm과 연동되는 블록체인은 아님
@@ -111,6 +107,12 @@ export default class AntibugNode {
       block,
       receipt,
     };
+  }
+
+  public async getNonce(privateKey: string): Promise<bigint> {
+    const address = privateKeyToAddress(privateKey);
+    const stateAccount = await this.vm.stateManager.getAccount(address);
+    return stateAccount?.nonce ?? 0n;
   }
 
   private getEstimatedGasLimit(parentBlock: Block): bigint {

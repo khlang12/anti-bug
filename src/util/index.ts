@@ -5,8 +5,8 @@ export const privateKeyToAddress = (privateKey: string) => {
   return address;
 };
 
-export const makeGenesisState = () => {
-  const convertedAccounts = DEFAULT_ACCOUNTS.map((account) => {
+export const makeGenesisState = (accounts: any) => {
+  const convertedAccounts = accounts.map((account: any) => {
     return {
       [privateKeyToAddress(account.privateKey).toString()]: [
         bigIntToHex(account.balance),
