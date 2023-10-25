@@ -39,7 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
     htmlFile: "deploy.ejs",
   });
 
-  primaryPanelDeployProvider.setListner(interactionListener);
+  primaryPanelDeployProvider.setListner(deployListener);
 
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -57,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
     htmlFile: "security.ejs",
   });
 
-  primaryPanelSecurityProvider.setListner(interactionListener);
+  primaryPanelSecurityProvider.setListner(securityListener);
 
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -75,7 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
     htmlFile: "testcode.ejs",
   });
 
-  primaryPanelTestcodeProvider.setListner(interactionListener);
+  primaryPanelTestcodeProvider.setListner(testcodeListener);
 
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -174,3 +174,16 @@ async function interactionListener(data: { type: string; value: any }) {
     }
   }
 }
+
+async function deployListener() {
+
+}
+
+async function securityListener() {
+
+}
+
+async function testcodeListener() {
+
+}
+
