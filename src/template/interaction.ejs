@@ -33,6 +33,12 @@
         />
         <button type="submit" class="send-eth__send">SEND</button>
       </form>
+      <div class="contract">
+        <p class="contract__address">Contract: -</p>
+        <button class="contract__deploy">Deploy</button>
+      </div>
+
+      <button class="call-tx">Call</button>
       <%-include('script.ejs') %>
       <script
         nonce="<%= nonce %>"
