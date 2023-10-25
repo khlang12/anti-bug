@@ -40,7 +40,6 @@ export default async function interactionListener(
       const from = privateKeyToAddress(fromPrivateKey).toString();
       const fromBalance = await antibugNode.getBalance(from);
       const toBalance = to ? await antibugNode.getBalance(to) : 0n;
-
       this.view.webview.postMessage({
         type: "receipt",
         value: {
@@ -58,63 +57,22 @@ export default async function interactionListener(
       });
       break;
     }
-    // case "deploy": {
-    //   const { callData, fromPrivateKey, value } = data.value;
-    //   const contractTxData = {
-    //     data: callData,
-    //     gasLimit: 3000000,
-    //     maxPriorityFeePerGas: 0,
-    //     maxFeePerGas: 3000000, // TODO
-    //     value,
-    //     nonce: await antibugNode.getNonce(fromPrivateKey),
-    //   };
-    //   const contractTx = FeeMarketEIP1559Transaction.fromTxData(
-    //     contractTxData
-    //   ).sign(hexToBytes(fromPrivateKey));
-    //   const { receipt } = await antibugNode.mine(contractTx);
 
-    //   this.view.webview.postMessage({
-    //     type: "setContractAddress",
-    //     value: {
-    //       address: receipt.createdAddress?.toString(),
-    //     },
-    //   });
-
-    //   break;
-    // }
-
-    // case "send": {
-    //   const { callData, fromPrivateKey, value, to } = data.value;
-    //   const txData = {
-    //     data: callData,
-    //     gasLimit: 3000000000,
-    //     maxPriorityFeePerGas: 0,
-    //     maxFeePerGas: 0,
-    //     nonce: await antibugNode.getNonce(fromPrivateKey),
-    //   };
-    //   const tx = FeeMarketEIP1559Transaction.fromTxData(txData).sign(
-    //     hexToBytes(fromPrivateKey)
-    //   );
-    //   const { receipt } = await antibugNode.mine(tx);
-    //   console.log(receipt.createdAddress?.toString());
-    //   break;
-    // }
-
-    // case "call": {
-    //   const { callData, fromPrivateKey, to } = data.value;
-    //   const callTxData = {
-    //     data: callData,
-    //     to,
-    //     maxFeePerGas: 3000000n,
-    //     gasLimit: 3000000n,
-    //     nonce: await antibugNode.getNonce(fromPrivateKey),
-    //   };
-    //   const callTx = FeeMarketEIP1559Transaction.fromTxData(callTxData).sign(
-    //     hexToBytes(fromPrivateKey)
-    //   );
-    //   const result = await antibugNode.runTx({ tx: callTx });
-    //   console.log(bytesToHex(result.execResult.returnValue));
-    //   break;
-    // }
+    case "call": {
+      const { callData, fromPrivateKey, to } = data.value;
+      const callTxData = {
+        data: callData,
+        to,
+        maxFeePerGas: 3000000n,
+        gasLimit: 3000000n,
+        nonce: await antibugNode.getNonce(fromPrivateKey),
+      };
+      const callTx = FeeMarketEIP1559Transaction.fromTxData(callTxData).sign(
+        hexToBytes(fromPrivateKey)
+      );
+      const result = await antibugNode.runTx({ tx: callTx });
+      console.log(bytesToHex(result.execResult.returnValue));
+      break;
+    }
   }
 }
