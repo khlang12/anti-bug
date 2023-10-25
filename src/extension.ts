@@ -11,6 +11,8 @@ import testcodeListener from "./listener/testcode";
 import securityListener from "./listener/security";
 import deployListener from "./listener/deploy";
 
+
+
 export async function activate(context: vscode.ExtensionContext) {
   const antibugNode = await AntibugNode.create();
   const primaryPanelInteractionProvider = new ViewProvider({

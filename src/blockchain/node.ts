@@ -109,6 +109,22 @@ export default class AntibugNode {
     };
   }
 
+  public async runTx({
+    tx,
+    block,
+  }: {
+    tx:
+      | FeeMarketEIP1559Transaction
+      | LegacyTransaction
+      | BlobEIP4844Transaction;
+    block?: Block;
+  }): Promise<RunTxResult> {
+    return await this.vm.runTx({
+      tx,
+      block,
+    });
+  }
+
   public async getNonce(privateKey: string): Promise<bigint> {
     const address = privateKeyToAddress(privateKey);
     const stateAccount = await this.vm.stateManager.getAccount(address);
