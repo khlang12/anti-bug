@@ -11,6 +11,8 @@ import { hexToBytes } from "@ethereumjs/util";
 import AntibugNode from "./blockchain/node";
 
 export function activate(context: vscode.ExtensionContext) {
+
+  // Interaction Sidebar Webview
   const primaryPanelInteractionProvider = new ViewProvider({
     extensionUri: context.extensionUri,
     viewType: "antibug.primaryPanel.interaction",
@@ -25,6 +27,60 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerWebviewViewProvider(
       primaryPanelInteractionProvider.getViewType(),
       primaryPanelInteractionProvider
+    )
+  );
+
+  // Deploy Sidebar Webview
+  const primaryPanelDeployProvider = new ViewProvider({
+    extensionUri: context.extensionUri,
+    viewType: "antibug.deploy",
+    cssFile: "",
+    scriptFile: "deploy.js",
+    htmlFile: "deploy.ejs",
+  });
+
+  primaryPanelDeployProvider.setListner(deployListener);
+
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      primaryPanelDeployProvider.getViewType(),
+      primaryPanelDeployProvider
+    )
+  );
+
+  // Security Analysis Sidebar Webview
+  const primaryPanelSecurityProvider = new ViewProvider({
+    extensionUri: context.extensionUri,
+    viewType: "antibug.security",
+    cssFile: "",
+    scriptFile: "security.js",
+    htmlFile: "security.ejs",
+  });
+
+  primaryPanelSecurityProvider.setListner(securityListener);
+
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      primaryPanelSecurityProvider.getViewType(),
+      primaryPanelSecurityProvider
+    )
+  );
+
+  // Testcode Sidebar Webview
+  const primaryPanelTestcodeProvider = new ViewProvider({
+    extensionUri: context.extensionUri,
+    viewType: "antibug.testcode",
+    cssFile: "",
+    scriptFile: "testcode.js",
+    htmlFile: "testcode.ejs",
+  });
+
+  primaryPanelTestcodeProvider.setListner(testcodeListener);
+
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      primaryPanelTestcodeProvider.getViewType(),
+      primaryPanelTestcodeProvider
     )
   );
 }
@@ -108,7 +164,7 @@ async function interactionListener(data: { type: string; value: any }) {
       const panel = vscode.window.createWebviewPanel(
         "resultView", // Identifies the type of the webview. Used internally
         "Result View", // Title of the panel displayed to the user
-        vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+        vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
         {} // Webview options. More on these later.
       );
       panel.webview.html = `
@@ -118,3 +174,16 @@ async function interactionListener(data: { type: string; value: any }) {
     }
   }
 }
+
+async function deployListener() {
+
+}
+
+async function securityListener() {
+
+}
+
+async function testcodeListener() {
+
+}
+

@@ -17,7 +17,7 @@
         {
           "id": "antibug",
           "title": "AntiBug",
-          "icon": "resources/antibug-icon.svg"
+          "icon": "./images/logo.png"
         }
       ]
     },
@@ -27,9 +27,62 @@
           "type": "webview",
           "name": "Interaction",
           "id": "antibug.primaryPanel.interaction"
+        },
+        {
+          "type": "webview",
+          "name": "Deploy & Function Interaction",
+          "id": "antibug.deploy"
+        },
+        {
+          "type": "webview",
+          "name": "Security Analysis",
+          "id": "antibug.security"
+        },
+        {
+          "type": "webview",
+          "name": "Test Code",
+          "id": "antibug.testcode"
         }
       ]
-    }
+    },
+    "commands": [
+      {
+        "category": "antibug",
+        "command": "antibug.welcomeView",
+        "title": "Welcome View"
+      },
+      {
+        "category": "antibug",
+        "command": "antibug.compile",
+        "title": "AntiBug Compile"
+      },
+      {
+        "category": "antibug",
+        "command": "antibug.deploy",
+        "title": "AntiBug Deploy"
+      },
+      {
+        "category": "antibug",
+        "command": "antibug.security",
+        "title": "AntiBug Security Analysis"
+      },
+      {
+        "category": "antibug",
+        "command": "antibug.solfile",
+        "title": "AntiBug Open SOL file"
+      },
+      {
+        "category": "antibug",
+        "command": "antibug.test",
+        "title": "AntiBug Test"
+      },
+      {
+        "category": "antibug",
+        "command": "antibug.auditreport",
+        "title": "AntiBug Audit Report",
+        "comment": "Markdown Viewer"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
