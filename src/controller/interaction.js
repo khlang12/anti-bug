@@ -1,15 +1,15 @@
 (function () {
   const vscode = acquireVsCodeApi();
 
-  const sendInteractionForm = document.querySelector(".send-interaction");
-  const addressSelect = document.querySelector(".send-interaction__address");
-  const toInput = document.querySelector(".send-interaction__to");
-  const ethInput = document.querySelector(".send-interaction__eth");
+  const sendInteractionForm = document.querySelector(".send-eth");
+  const addressSelect = document.querySelector(".send-eth__select");
+  const addressCopyButton = document.querySelector(".send-eth__copy");
+  const toInput = document.querySelector(".send-eth__to");
+  const ethInput = document.querySelector(".send-eth__eth");
 
   sendInteractionForm.addEventListener("submit", (event) => {
     event.preventDefault();
 
-    console.log(addressSelect.value, toInput.value, ethInput.value);
     vscode.postMessage({
       type: "sendEth",
       value: {
@@ -18,6 +18,14 @@
         value: ethInput.value,
       },
     });
+  });
+
+  addressCopyButton.addEventListener("click", () => {
+    const address = addressSelect
+      .querySelector("option:checked")
+      .innerHTML.split("(")[0]
+      .trim();
+    navigator.clipboard.writeText(address);
   });
 
   window.addEventListener("message", ({ data }) => {

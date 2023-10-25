@@ -16,7 +16,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const primaryPanelInteractionProvider = new ViewProvider({
     extensionUri: context.extensionUri,
     viewType: "antibug.primaryPanel.interaction",
-    cssFile: "",
+    cssFile: "interaction.css",
     scriptFile: "interaction.js",
     htmlFile: "interaction.ejs",
     initialData: {

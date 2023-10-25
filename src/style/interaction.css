@@ -1,0 +1,15 @@
+.send-eth {
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+}
+
+.send-eth__address {
+  display: flex;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.send-eth__copy {
+  cursor: pointer;
+}

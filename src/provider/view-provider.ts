@@ -99,11 +99,23 @@ export class ViewProvider implements vscode.WebviewViewProvider {
 
   private getHtmlForWebview(webview: vscode.Webview): string {
     const styleResetUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "style", "reset.css")
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        "src",
+        "style",
+        "common",
+        "reset.css"
+      )
     );
 
     const styleCommonUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, "src", "style", "common.css")
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        "src",
+        "style",
+        "common",
+        "global.css"
+      )
     );
 
     const styleMainUri = webview.asWebviewUri(

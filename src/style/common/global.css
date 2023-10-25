@@ -1,9 +1,15 @@
 :root {
-  --container-paddding: 20px;
-  --input-padding-vertical: 6px;
-  --input-padding-horizontal: 4px;
+  --container-paddding: 12px;
+  --input-padding-vertical: 12px;
+  --input-padding-horizontal: 12px;
   --input-margin-vertical: 4px;
   --input-margin-horizontal: 0;
+  --font-xs: 12px;
+  --font-sm: 14px;
+  --font-md: 16px;
+  --font-lg: 18px;
+  --font-xl: 20px;
+  --font-xxl: 24px;
 }
 
 button {
@@ -27,6 +33,7 @@ button:focus {
 }
 
 input:not([type="checkbox"]),
+select,
 textarea {
   display: block;
   width: 100%;
@@ -41,4 +48,9 @@ textarea {
 input::placeholder,
 textarea::placeholder {
   color: var(--vscode-input-placeholderForeground);
+  font-size: var(--font-md);
+}
+
+.container {
+  padding: var(--container-paddding);
 }

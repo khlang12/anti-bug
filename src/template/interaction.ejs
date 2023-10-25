@@ -6,28 +6,38 @@
       <title>Interaction</title>
     </head>
 
-    <body>
-      <form class="send-interaction">
-        <select class="send-interaction__address">
-          <% accounts.forEach(account => { %>
-          <option value="<%= account.privateKey %>">
-            <%= account.address %>(<%= account.balance.toString() %>)
-          </option>
-          <% }); %>
-        </select>
+    <body class="container">
+      <form class="send-eth">
+        <div class="send-eth__address">
+          <select class="send-eth__select">
+            <% accounts.forEach(account => { %>
+            <option value="<%= account.privateKey %>">
+              <%= account.address %>(<%= account.balance.toString() %>)
+            </option>
+            <% }); %>
+          </select>
+          <div type="button" class="send-eth__copy">
+            <i class="far fa-copy"></i>
+          </div>
+        </div>
+
         <input
-          class="send-interaction__to"
+          class="send-eth__to"
           type="text"
           placeholder="Enter your walletAddress"
         />
         <input
-          class="send-interaction__eth"
+          class="send-eth__eth"
           type="number"
           placeholder="Enter eth price to send"
         />
-        <button class="send-interaction__send">RUN</button>
+        <button type="submit" class="send-eth__send">SEND</button>
       </form>
       <%-include('script.ejs') %>
+      <script
+        nonce="<%= nonce %>"
+        src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"
+      ></script>
     </body>
   </html>
 </html>
