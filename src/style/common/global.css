@@ -54,3 +54,7 @@ textarea::placeholder {
 .container {
   padding: var(--container-paddding);
 }
+
+.hidden {
+  display: none;
+}

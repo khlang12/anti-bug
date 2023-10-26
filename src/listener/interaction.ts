@@ -120,7 +120,6 @@ export default async function interactionListener(
             .concat(".json");
           const jsonFilePath = path.join(directoryPath, jsonFileName);
           const jsonFile = require(jsonFilePath);
-          console.log(jsonFile);
           const { abis, bytecodes, contract } = jsonFile;
 
           this.view.webview.postMessage({
@@ -135,6 +134,11 @@ export default async function interactionListener(
       } catch (e) {
         console.log(e);
       }
+    }
+
+    case "makeFunctions": {
+      const { abi } = event.value;
+      console.log(abi);
     }
   }
 }
