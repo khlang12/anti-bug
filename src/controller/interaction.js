@@ -16,6 +16,12 @@
 
   let compiledByteCode = null;
 
+  window.onload = () => {
+    vscode.postMessage({
+      type: "init",
+    });
+  };
+
   //TODO: Refactor
   sendInteractionForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -64,6 +70,30 @@
 
   window.addEventListener("message", ({ data }) => {
     switch (data.type) {
+      case "init": {
+        const { accounts, solFiles } = data.value;
+        const solFileOptions = solFiles.map(({ path }) => {
+          const option = document.createElement("option");
+          option.value = path;
+          option.innerHTML = path;
+          return option;
+        });
+
+        solFilesSelect.replaceChildren(...solFileOptions);
+
+        const accountOptions = accounts.map(
+          ({ address, privateKey, balance }) => {
+            const option = document.createElement("option");
+            option.value = privateKey;
+            option.innerHTML = `${address} (${balance})`;
+            return option;
+          }
+        );
+
+        addressSelect.replaceChildren(...accountOptions);
+        break;
+      }
+
       case "receipt": {
         const {
           accounts,
@@ -104,6 +134,7 @@
       case "compiled": {
         const { abis, bytecodes, contract } = data.value;
         compiledByteCode = bytecodes;
+        console.log(abis);
       }
     }
   });

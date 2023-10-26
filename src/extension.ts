@@ -11,29 +11,12 @@ import deployListener from "./listener/deploy";
 export async function activate(context: vscode.ExtensionContext) {
   const antibugNode = await AntibugNode.create();
 
-  const workspaceFolders = vscode.workspace.workspaceFolders;
-  const solFiles: vscode.Uri[] = [];
-
-  if (workspaceFolders) {
-    for (const folder of workspaceFolders) {
-      const files = await vscode.workspace.findFiles(
-        new vscode.RelativePattern(folder, "**/*.sol"),
-        "**/node_modules/**"
-      );
-      solFiles.push(...files);
-    }
-  }
-
   const primaryPanelInteractionProvider = new ViewProvider({
     extensionUri: context.extensionUri,
     viewType: "antibug.primaryPanel.interaction",
     cssFile: "interaction.css",
     scriptFile: "interaction.js",
     htmlFile: "interaction.ejs",
-    initialData: {
-      accounts: DEFAULT_ACCOUNTS,
-      solFiles,
-    },
   });
 
   const bindedInteractionListener = interactionListener.bind(
@@ -41,6 +24,14 @@ export async function activate(context: vscode.ExtensionContext) {
     antibugNode
   );
   primaryPanelInteractionProvider.setListner(bindedInteractionListener);
+
+  const disposalPrimaryPanelInteraction =
+    vscode.window.registerWebviewViewProvider(
+      primaryPanelInteractionProvider.getViewType(),
+      primaryPanelInteractionProvider
+    );
+
+  context.subscriptions.push(disposalPrimaryPanelInteraction);
 
   // Deploy Sidebar Webview
   const primaryPanelDeployProvider = new ViewProvider({
@@ -93,13 +84,6 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.registerWebviewViewProvider(
       primaryPanelTestcodeProvider.getViewType(),
       primaryPanelTestcodeProvider
-    )
-  );
-
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      primaryPanelInteractionProvider.getViewType(),
-      primaryPanelInteractionProvider
     )
   );
 }

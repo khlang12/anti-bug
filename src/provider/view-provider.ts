@@ -3,38 +3,33 @@ import * as ejs from "ejs";
 import * as fs from "fs";
 
 export class ViewProvider implements vscode.WebviewViewProvider {
-  public view?: vscode.WebviewView;
-
   private _extensionUri: vscode.Uri;
   private _viewType: string;
   private _cssFile?: string;
   private _scriptFile?: string;
   private _htmlFile?: string;
   private _callback?: (data: { type: string; value: any }) => void;
-  private _initialData?: {
-    [key: string]: any;
-  };
+
+  public view?: vscode.WebviewView;
+
   constructor({
     extensionUri,
     viewType,
     cssFile,
     scriptFile,
     htmlFile,
-    initialData,
   }: {
     extensionUri: vscode.Uri;
     viewType: string;
     cssFile?: string;
     scriptFile?: string;
     htmlFile?: string;
-    initialData?: { [key: string]: any };
   }) {
     this._extensionUri = extensionUri;
     this._viewType = viewType;
     this._cssFile = cssFile;
     this._scriptFile = scriptFile;
     this._htmlFile = htmlFile;
-    this._initialData = initialData;
   }
 
   public resolveWebviewView(
@@ -77,10 +72,6 @@ export class ViewProvider implements vscode.WebviewViewProvider {
     this._htmlFile = htmlFile;
   }
 
-  public setInitialData(data: { [key: string]: any }) {
-    this._initialData = data;
-  }
-
   public setCss(file: string) {
     this._cssFile = file;
   }
@@ -98,6 +89,8 @@ export class ViewProvider implements vscode.WebviewViewProvider {
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
+    console.log("rendering");
+
     const styleResetUri = webview.asWebviewUri(
       vscode.Uri.joinPath(
         this._extensionUri,
@@ -159,7 +152,6 @@ export class ViewProvider implements vscode.WebviewViewProvider {
         styleResetUri,
         styleCommonUri,
         styleMainUri,
-        ...this._initialData,
         cspSource: webview.cspSource,
         nonce,
       },

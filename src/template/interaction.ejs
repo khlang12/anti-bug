@@ -9,13 +9,7 @@
     <body class="container">
       <form class="send-eth">
         <div class="send-eth__address">
-          <select class="send-eth__select">
-            <% accounts.forEach(account => { %>
-            <option value="<%= account.privateKey %>">
-              <%= account.address %>(<%= account.balance.toString() %>)
-            </option>
-            <% }); %>
-          </select>
+          <select class="send-eth__select"></select>
           <div type="button" class="send-eth__copy">
             <i class="far fa-copy"></i>
           </div>
@@ -40,11 +34,7 @@
 
       <button class="call-tx">Call</button>
       <div class="compile">
-        <select class="compile__solFiles">
-          <% solFiles.forEach(solFile => { %>
-          <option value="<%= solFile.path %>"><%= solFile.path %></option>
-          <% }); %>
-        </select>
+        <select class="compile__solFiles"></select>
         <button class="compile__submit">Copile</button>
       </div>
 

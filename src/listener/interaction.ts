@@ -4,6 +4,8 @@ import { bigIntToHex, bytesToHex, hexToBytes } from "@ethereumjs/util";
 import { privateKeyToAddress } from "../util";
 import { exec } from "child_process";
 import * as path from "path";
+import * as vscode from "vscode";
+import { DEFAULT_ACCOUNTS } from "../util/config";
 
 export default async function interactionListener(
   this: any,
@@ -11,6 +13,34 @@ export default async function interactionListener(
   event: { type: string; value: any }
 ) {
   switch (event.type) {
+    case "init": {
+      const workspaceFolders = vscode.workspace.workspaceFolders;
+      const solFiles: vscode.Uri[] = [];
+
+      if (workspaceFolders) {
+        for (const folder of workspaceFolders) {
+          const files = await vscode.workspace.findFiles(
+            new vscode.RelativePattern(folder, "**/*.sol"),
+            "**/node_modules/**"
+          );
+          solFiles.push(...files);
+        }
+      }
+
+      this.view.webview.postMessage({
+        type: "init",
+        value: {
+          accounts: DEFAULT_ACCOUNTS.map((account) => ({
+            address: account.address,
+            privateKey: account.privateKey,
+            balance: account.balance.toString(),
+          })),
+          solFiles,
+        },
+      });
+      break;
+    }
+
     case "send": {
       const { data, maxFeePerGas, gasLimit, fromPrivateKey, value, to } =
         event.value;
