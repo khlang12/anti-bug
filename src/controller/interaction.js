@@ -16,13 +16,7 @@
   const solFilesSelect = document.querySelector(".compile__solFiles");
   const compileButton = document.querySelector(".compile__submit");
 
-  const dropdown = document.querySelector(".dropdown");
-
   let compiledByteCode = null;
-
-  dropdown.addEventListener("click", () => {
-    dropdown.querySelector(".dropdown__list").classList.toggle("hidden");
-  });
 
   window.onload = () => {
     vscode.postMessage({
@@ -146,39 +140,95 @@
         break;
       }
 
+      // view , pure 함수는 send 버튼이 아닌 call 버튼으로 호출
+
       case "compiled": {
         const { abis, bytecodes, contract } = data.value;
         compiledByteCode = bytecodes;
-        const interactionElement = abis.map(
-          ({ name, inputs, stateMutability }) => {
-            const containerElement = document.createElement("div");
-            const functionsElement = document.createElement("div");
 
-            inputs.map(({ internalType, name, type }) => {
+        const onlyFunctionAbis = abis.filter(({ type }) => type === "function");
+        const contractElement = document.createElement("div");
+        contractElement.classList.add("contract");
+
+        const functionElements = onlyFunctionAbis.map(
+          ({ name, inputs, stateMutability, type }) => {
+            const functionElement = document.createElement("div");
+            functionElement.classList.add("function");
+
+            const functionActionSingleElement = document.createElement("div");
+            functionActionSingleElement.classList.add(
+              "function__action-single"
+            );
+
+            const functionActionMultiElement = document.createElement("div");
+            functionActionMultiElement.classList.add(
+              "function__action-multi",
+              "hidden"
+            );
+
+            const actionElement = document.createElement("button");
+            actionElement.innerHTML = name;
+            actionElement.classList.add(stateMutability, "function__action");
+            functionActionSingleElement.appendChild(actionElement);
+
+            if (inputs.length === 1) {
               const inputElement = document.createElement("input");
-              inputElement.placeholder = `${type} ${name}`;
+              inputElement.placeholder = `${inputs[0].type} ${inputs[0].name}`;
+              functionActionSingleElement.appendChild(inputElement);
+            }
 
-              functionsElement.appendChild(inputElement);
-            });
+            if (inputs.length > 1) {
+              const chevronDownButtonElement = makeChevronDownButtonElement();
+              const argsElement = makeMultiArgsElements(inputs);
+              functionActionSingleElement.appendChild(chevronDownButtonElement);
+              functionActionMultiElement.replaceChildren(...argsElement);
+            }
 
-            console.log(functionsElement);
-            const sendElement = document.createElement("button");
-            sendElement.innerHTML = name;
-            sendElement.classList.add(stateMutability, "function-send");
+            functionElement.replaceChildren(functionActionSingleElement);
+            functionElement.appendChild(functionActionMultiElement);
 
-            containerElement.appendChild(sendElement);
-            containerElement.appendChild(functionsElement);
-
-            contractInteractionDiv.appendChild(containerElement);
+            return functionElement;
           }
         );
+        contractElement.replaceChildren(...functionElements);
+        contractInteractionDiv.appendChild(contractElement);
       }
     }
   });
 
-  // function listenText() {
-  //   const sampleText = "sample Text";
-  //   text.push(sampleText);
-  //   vscode.setState({ text: text });
-  // }
+  function makeMultiArgsElements(inputs) {
+    const argsElements = inputs.map(({ name, type }) => {
+      const argElement = document.createElement("div");
+      argElement.classList.add("argument");
+
+      const inputNameElement = document.createElement("div");
+      inputNameElement.classList.add("argument__name");
+      inputNameElement.innerHTML = `${type} ${name}`;
+
+      const inputElement = document.createElement("input");
+
+      argElement.appendChild(inputNameElement);
+      argElement.appendChild(inputElement);
+
+      return argElement;
+    });
+
+    return argsElements;
+  }
+
+  function makeChevronDownButtonElement() {
+    const chevronDownButtonElement = document.createElement("div");
+    const chevronDownIconElement = document.createElement("i");
+    chevronDownIconElement.classList.add(
+      "fas",
+      "fa-chevron-down",
+      "dropdown-action"
+    );
+    chevronDownButtonElement.style.cursor = "pointer";
+    chevronDownButtonElement.addEventListener("click", () => {
+      functionActionMultiElement.classList.toggle("hidden");
+    });
+    chevronDownButtonElement.appendChild(chevronDownIconElement);
+    return chevronDownButtonElement;
+  }
 })();

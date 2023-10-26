@@ -10,6 +10,8 @@
   --font-lg: 18px;
   --font-xl: 20px;
   --font-xxl: 24px;
+
+  --radius-sm: 4px;
 }
 
 button {
@@ -43,6 +45,7 @@ textarea {
   color: var(--vscode-input-foreground);
   outline-color: var(--vscode-input-border);
   background-color: var(--vscode-input-background);
+  border-radius: var(--radius-sm);
 }
 
 input::placeholder,
