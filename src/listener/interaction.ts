@@ -1,13 +1,8 @@
 import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
 import AntibugNode from "../blockchain/node";
-import {
-  bigIntToHex,
-  bytesToHex,
-  hexToBytes,
-  intToHex,
-} from "@ethereumjs/util";
+import { bigIntToHex, bytesToHex, hexToBytes } from "@ethereumjs/util";
 import { privateKeyToAddress } from "../util";
-import { spawn } from "child_process";
+import { exec } from "child_process";
 import * as path from "path";
 
 export default async function interactionListener(
@@ -78,28 +73,38 @@ export default async function interactionListener(
 
     case "compile": {
       const { solFile } = event.value;
-      console.log(process.env.PATH);
-      const absolutePathToFile = path.join(
-        __dirname,
-        "/Users/p1n9/Desktop/bl0ckp1n9/protocol-camp/vsc-extension/SafeDevAnalyzer/test/reentrancy.sol"
-      );
-      console.log(absolutePathToFile);
-      const command = spawn("antibug", ["deploy", absolutePathToFile]);
+      try {
+        exec(`antibug deploy ${solFile}`, (error, stdout, stderr) => {
+          if (error) {
+            console.error(`exec error: ${error}`);
+            return;
+          }
+          if (stderr) {
+            console.error(`stderr: ${stderr}`);
+          }
+          const directoryPath = stdout.split(":")[1].trim();
+          const jsonFileName = solFile
+            .split("/")
+            .pop()
+            ?.split(".")[0]
+            .concat(".json");
+          const jsonFilePath = path.join(directoryPath, jsonFileName);
+          const jsonFile = require(jsonFilePath);
+          console.log(jsonFile);
+          const { abis, bytecodes, contract } = jsonFile;
 
-      command.stdout.on("data", (data) => {
-        console.log(`stdout: ${data}`);
-      });
-
-      command.stderr.on("data", (data) => {
-        console.error(`stderr: ${data}`);
-      });
-
-      command.on("close", (code) => {
-        console.log(`child process exited with code ${code}`);
-      });
-      command.on("error", (err) => {
-        console.error("Failed to start process:", err);
-      });
+          this.view.webview.postMessage({
+            type: "compiled",
+            value: {
+              abis,
+              bytecodes,
+              contract,
+            },
+          });
+        });
+      } catch (e) {
+        console.log(e);
+      }
     }
   }
 }
