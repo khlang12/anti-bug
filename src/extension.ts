@@ -1,20 +1,29 @@
 import * as vscode from "vscode";
 
 import { ViewProvider } from "./provider/view-provider";
-import { privateKeyToAddress } from "./util";
 import { DEFAULT_ACCOUNTS } from "./util/config";
-import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
-import { hexToBytes } from "@ethereumjs/util";
 import AntibugNode from "./blockchain/node";
 import interactionListener from "./listener/interaction";
 import testcodeListener from "./listener/testcode";
 import securityListener from "./listener/security";
 import deployListener from "./listener/deploy";
 
-
-
 export async function activate(context: vscode.ExtensionContext) {
   const antibugNode = await AntibugNode.create();
+
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  const solFiles: vscode.Uri[] = [];
+
+  if (workspaceFolders) {
+    for (const folder of workspaceFolders) {
+      const files = await vscode.workspace.findFiles(
+        new vscode.RelativePattern(folder, "**/*.sol"),
+        "**/node_modules/**"
+      );
+      solFiles.push(...files);
+    }
+  }
+
   const primaryPanelInteractionProvider = new ViewProvider({
     extensionUri: context.extensionUri,
     viewType: "antibug.primaryPanel.interaction",
@@ -23,6 +32,7 @@ export async function activate(context: vscode.ExtensionContext) {
     htmlFile: "interaction.ejs",
     initialData: {
       accounts: DEFAULT_ACCOUNTS,
+      solFiles,
     },
   });
 

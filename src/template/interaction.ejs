@@ -39,6 +39,15 @@
       </div>
 
       <button class="call-tx">Call</button>
+      <div class="compile">
+        <select class="compile__solFiles">
+          <% solFiles.forEach(solFile => { %>
+          <option value="<%= solFile.path %>"><%= solFile.path %></option>
+          <% }); %>
+        </select>
+        <button class="compile__submit">Copile</button>
+      </div>
+
       <%-include('script.ejs') %>
       <script
         nonce="<%= nonce %>"

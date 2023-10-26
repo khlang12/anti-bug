@@ -7,26 +7,27 @@ import {
   intToHex,
 } from "@ethereumjs/util";
 import { privateKeyToAddress } from "../util";
-import { DEFAULT_ACCOUNTS } from "../util/config";
+import { spawn } from "child_process";
+import * as path from "path";
 
 export default async function interactionListener(
   this: any,
   antibugNode: AntibugNode,
   event: { type: string; value: any }
 ) {
-  const address1 = privateKeyToAddress(DEFAULT_ACCOUNTS[2].privateKey);
-  const address2 = privateKeyToAddress(DEFAULT_ACCOUNTS[3].privateKey);
-
   switch (event.type) {
     case "send": {
       const { data, maxFeePerGas, gasLimit, fromPrivateKey, value, to } =
         event.value;
+      const latestBlock = antibugNode.getLatestBlock();
+      const estimatedGasLimit = antibugNode.getEstimatedGasLimit(latestBlock);
+      const baseFee = latestBlock.header.calcNextBaseFee();
 
       const txData = {
         to,
         value: bigIntToHex(BigInt(value)),
-        maxFeePerGas: BigInt(maxFeePerGas),
-        gasLimit: BigInt(gasLimit),
+        maxFeePerGas: baseFee,
+        gasLimit: estimatedGasLimit,
         nonce: await antibugNode.getNonce(fromPrivateKey),
         data,
       };
@@ -59,7 +60,7 @@ export default async function interactionListener(
     }
 
     case "call": {
-      const { callData, fromPrivateKey, to } = data.value;
+      const { callData, fromPrivateKey, to } = event.value;
       const callTxData = {
         data: callData,
         to,
@@ -73,6 +74,32 @@ export default async function interactionListener(
       const result = await antibugNode.runTx({ tx: callTx });
       console.log(bytesToHex(result.execResult.returnValue));
       break;
+    }
+
+    case "compile": {
+      const { solFile } = event.value;
+      console.log(process.env.PATH);
+      const absolutePathToFile = path.join(
+        __dirname,
+        "/Users/p1n9/Desktop/bl0ckp1n9/protocol-camp/vsc-extension/SafeDevAnalyzer/test/reentrancy.sol"
+      );
+      console.log(absolutePathToFile);
+      const command = spawn("antibug", ["deploy", absolutePathToFile]);
+
+      command.stdout.on("data", (data) => {
+        console.log(`stdout: ${data}`);
+      });
+
+      command.stderr.on("data", (data) => {
+        console.error(`stderr: ${data}`);
+      });
+
+      command.on("close", (code) => {
+        console.log(`child process exited with code ${code}`);
+      });
+      command.on("error", (err) => {
+        console.error("Failed to start process:", err);
+      });
     }
   }
 }

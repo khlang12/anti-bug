@@ -131,7 +131,7 @@ export default class AntibugNode {
     return stateAccount?.nonce ?? 0n;
   }
 
-  private getEstimatedGasLimit(parentBlock: Block): bigint {
+  public getEstimatedGasLimit(parentBlock: Block): bigint {
     const parentGasLimit = parentBlock.header.gasLimit;
     const a =
       parentGasLimit /
@@ -144,5 +144,9 @@ export default class AntibugNode {
     const minGasLimit = parentGasLimit - a;
 
     return minGasLimit + (maxGasLimit - minGasLimit) / 2n;
+  }
+
+  public getLatestBlock(): Block {
+    return this.blockchain.getLatestBlock();
   }
 }
