@@ -16,6 +16,7 @@
 
   let compiledByteCode = null;
 
+  //TODO: Refactor
   sendInteractionForm.addEventListener("submit", (event) => {
     event.preventDefault();
 
