@@ -14,7 +14,7 @@ async function deployListener(context) {
     else {
         deployPanel = vscode.window.createWebviewPanel('deployResultView', 'Deploy Result View', vscode.ViewColumn.Two, { enableScripts: true });
         try {
-            htmlFilePath = vscode.Uri.file(path.join(context.extensionPath, 'src/pages/deploy.html'));
+            htmlFilePath = vscode.Uri.file(path.join(context.extensionPath, 'src/pages/deploy_result.ejs'));
             htmlContent = await fs.promises.readFile(htmlFilePath.fsPath, 'utf-8');
             deployPanel.webview.html = htmlContent;
         }

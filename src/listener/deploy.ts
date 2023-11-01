@@ -11,7 +11,7 @@ let htmlContent: string | undefined;
 export default async function deployListener(context: vscode.ExtensionContext) {
     vscode.window.showInformationMessage('deployListener 실행됨!');
 
-    // 우측 패널에 deploy.html 열기
+    // 우측 패널에 deploy_result.ejs 열기
     if (deployPanel) {
         deployPanel.reveal(vscode.ViewColumn.Two);
     } else {
@@ -23,7 +23,7 @@ export default async function deployListener(context: vscode.ExtensionContext) {
         );
 
         try {
-            htmlFilePath = vscode.Uri.file(path.join(context.extensionPath, 'src/pages/deploy.html'));
+            htmlFilePath = vscode.Uri.file(path.join(context.extensionPath, 'src/pages/deploy_result.ejs'));
             htmlContent = await fs.promises.readFile(htmlFilePath.fsPath, 'utf-8');
             deployPanel.webview.html = htmlContent;
         } catch (error) {

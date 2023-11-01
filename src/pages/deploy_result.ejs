@@ -106,67 +106,14 @@
             <li class="tab-link" data-tab="tab-2">history</li>
         </ul>
 
-        <script>
-            // HTML이 열리면 실행되는 Listener 함수
-            document.addEventListener("DOMContentLoaded", async function () {
-
-                // tab action 구현
-                const tabLinks = document.querySelectorAll(".tab-link");
-                const tabContents = document.querySelectorAll(".tab-content");
-
-                tabLinks.forEach(function (link) {
-                    link.addEventListener("click", function () {
-                        const tabId = this.getAttribute("data-tab");
-
-                        tabLinks.forEach(function (tabLink) {
-                            tabLink.classList.remove("current");
-                        });
-                        tabContents.forEach(function (tabContent) {
-                            tabContent.classList.remove("current");
-                        });
-
-                        this.classList.add("current");
-                        document.getElementById(tabId).classList.add("current");
-                    });
-                });
-
-                // toggle action 구현
-                const toggleButton = document.getElementById("card-button");
-                const toggleContent = document.getElementById("card-content");
-
-                toggleButton.addEventListener("click", function () {
-                    if (toggleContent.style.display === "none" || toggleContent.style.display === "") {
-                        toggleContent.style.display = "block";
-                    } else {
-                        toggleContent.style.display = "none";
-                    }
-                });
-
-                // abi 경로 설정 231101
-                const abiFilePath = 'src/result/deploy_info_json_results/reentrancy.json';
-
-                try {
-                    const response = await fetch(abiFilePath);
-                    if (response.ok) {
-                        const abiData = await response.json();
-                        const functionNames = abiData.map((item) => item.name);
-
-                        const functionList = document.getElementById('function-names');
-                        if (functionList) {
-                            functionList.textContent = functionNames.join(', ');
-                        }
-                    } else {
-                        throw new Error('Failed to fetch ABI data');
-                    }
-                } catch (error) {
-                    const functionList = document.getElementById('function-names');
-                }
-            });
-
-        </script>
+        <script src="deploy_result.js"></script>
 
         <div id="tab-1" class="tab-content current">
             <h3>Deployed Contract</h3>
+
+            <p>function-test: </p>
+            <p id="function-test"></p>
+
             <div class="card">
                 <button class="card-button" id="card-button" onclick="cardAction()">▼ EtherStore at ${address}</button>
                 <div class="card-content" id="card-content">
@@ -176,7 +123,7 @@
                         <!-- button이 function 개수만큼 생겨야 하는 부분 -->
                         <div class="card-balance__funciton" id="function-button">
                             <!-- <button id="function-names">${function} 동적생성</button> -->
-                            <p>function-names:   </p>
+                            <p>function-names: </p>
                             <p id="function-names"></p>
                             <!-- <textarea placeholder="동적생성"></textarea> -->
                         </div>

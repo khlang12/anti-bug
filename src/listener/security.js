@@ -20,7 +20,7 @@ async function securityListener(context, data) {
             else {
                 securityPanel = vscode.window.createWebviewPanel('securityResultView', 'Security Result View', vscode.ViewColumn.Two, { enableScripts: true });
                 try {
-                    htmlFilePath = vscode.Uri.file(path.join(context.extensionPath, 'src/pages/security.html'));
+                    htmlFilePath = vscode.Uri.file(path.join(context.extensionPath, 'src/pages/security_result.ejs'));
                     htmlContent = await fs.promises.readFile(htmlFilePath.fsPath, 'utf-8');
                     securityPanel.webview.html = htmlContent;
                 }

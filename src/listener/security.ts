@@ -31,7 +31,7 @@ export default async function securityListener(
                 );
 
                 try {
-                    htmlFilePath = vscode.Uri.file(path.join(context.extensionPath, 'src/pages/security.html'));
+                    htmlFilePath = vscode.Uri.file(path.join(context.extensionPath, 'src/pages/security_result.ejs'));
                     htmlContent = await fs.promises.readFile(htmlFilePath.fsPath, 'utf-8');
                     securityPanel.webview.html = htmlContent;
                 } catch (error) {
