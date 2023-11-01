@@ -1,3 +1,80 @@
-.button-compile {
-    color : red;
+.sidebar-container {
+    padding: 10px !important;
+    margin: 10px;
 }
+
+button {
+    margin: 10px 0;
+}
+
+.head {
+    margin: 20px 0 10px 0;
+}
+
+.dropdown {
+    width: 30px;
+}
+
+.input-value {
+    display: flex;
+}
+
+.input-value__value {
+    width: 50%;
+    margin: 0 2px 0 0;
+}
+
+.input-value__with {
+    width: 50%;
+    margin: 0 0 0 2px;
+}
+
+.button-rule {
+    display: flex;
+}
+
+.button-rule__add {
+    width: 25px;
+    height: 25px;
+    margin: 2px 5px 0 auto;
+    background-color: gray;
+}
+
+.button-rule__reset {
+    width: 25px;
+    height: 25px;
+    margin: 2px 0;
+    background-color: gray;
+}
+
+#toggle-content {
+    display: none;
+    margin: 0 0 10px 0;
+}
+
+.toggle-button__switch {
+    position: relative;
+    width: 40px;
+    height: 20px;
+    background-color: #ccc;
+    border: none;
+    border-radius: 34px;
+    cursor: pointer;
+}
+
+.slider {
+    position: absolute;
+    content: "";
+    height: 15px;
+    width: 15px;
+    background-color: white;
+    border-radius: 50%;
+    left: 4px;
+    bottom: 3px;
+    transition: transform 0.4s;
+}
+
+.input-similar__filepath, .input-similar__contract, .input-similar__function {
+    margin: 5px 0;
+}
+

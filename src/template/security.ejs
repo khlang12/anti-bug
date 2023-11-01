@@ -1,29 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
-  <html lang="en">
-    <head>
-      <%-include('head.ejs') %>
-      <title>Security Analysis</title>
-    </head>
 
-    <body>
-      <div class="security-container">
+<head>
+  <%-include('head.ejs') %>
+    <title>Security Analysis</title>
+</head>
 
-        <p>Applicable Rule</p>
-        <button class="button-rule-add">+</button>
-        <button class="button-rule-remove">-</button>
-        <label><input type="checkbox" name="rule" value="Keyword1">Keyword1</label><br>
-        <label><input type="checkbox" name="rule" value="Keyword2">Keyword2</label><br>
-        <label><input type="checkbox" name="rule" value="Keyword3">Keyword3</label><br>
+<body>
+  <div class="sidebar-container">
 
-        <p>Print Type</p>
-        <textarea class="textarea-result-print">print result...</textarea>
+    <p class="head">Applicable Rule</p>
+    <!-- <div class="button-rule">
+      <button class="button-rule__add">+</button>
+      <button class="button-rule__reset">-</button>
+      <img class="icon" src="../../images/refresh.png">
+    </div> -->
 
-        <button class="button-analysis">Analysis</button>
-        <button class="button-auditreport">Audit Report</button>
+    <div class="check-box">
+      <label><input type="checkbox" name="rule" value="Reentrancy">Reentrancy</label><br>
+      <label><input type="checkbox" name="rule" value="tx-origin">tx-origin</label><br>
+      <label><input type="checkbox" name="rule" value="Bad Randomness">Bad Randomness</label><br>
+      <label><input type="checkbox" name="rule" value="Delegatecall">Delegatecall</label><br>
+    </div>
 
+    <p class="head">Print Type</p>
+
+    <div class="check-box">
+      <label><input type="checkbox" name="print-type" value="Graph">Graph</label><br>
+      <label><input type="checkbox" name="print-type" value="Detail">Detail</label><br>
+      <label><input type="checkbox" name="print-type" value="Summary">Summary</label><br>
+    </div>
+
+    <div>
+      <p class="head">Vulnerability Detection by Code Similarity</p>
+
+      <script nonce="<%= nonce %>">
+        window.addEventListener("DOMContentLoaded", () => {
+          toggleAction();
+        })
+      </script>
+
+      <button class="toggle-button__switch" id="toggle-button" onclick="toggleAction()">
+        <span class="slider"></span>
+      </button>
+
+      <div id="toggle-content">
+        <input class="input-similar__filepath" type="text" placeholder="File Path" />
+        <input class="input-similar__contract" type="text" placeholder="Contract name" />
+        <input class="input-similar__function" type="text" placeholder="Function name" />
       </div>
-      <%-include('script.ejs') %>
-    </body>
-  </html>
+    </div>
+
+    <button class="button-analysis" command="analysis">Analysis</button>
+    <button class="button-auditreport" command="auditreport">Audit Report</button>
+    
+
+  </div>
+  <%-include('script.ejs') %>
+</body>
+
 </html>

@@ -1,42 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-  <html lang="en">
-    <head>
-      <%-include('head.ejs') %>
-      <title>Deploy & Function Interaction</title>
-    </head>
+<html lang="en">
 
-    <body>
-      <div class="test-container">
-        <button class="button-compile">Compile</button>
-        <input
-          class="input-chain"
-          type="text"
-          placeholder="Chain"
-        />
-        <input
-          class="input-address"
-          type="text"
-          placeholder="Address"
-        />
-        <input
-          class="input-gaslimit"
-          type="text"
-          placeholder="Gas Limit"
-        />
-        <input
-          class="input-value"
-          type="text"
-          placeholder="Value"
-        />
-        <input
-          class="input-contract"
-          type="text"
-          placeholder="Contract"
-        />
-        <button class="button-deploy">Deploy</button>
-      </div>
-      <%-include('script.ejs') %>
-    </body>
-  </html>
+<head>
+  <%-include('head.ejs') %>
+    <title>Deploy & Function Interaction</title>
+</head>
+
+<body>
+  <div class="sidebar-container">
+    <button class="button-compile">Compile</button>
+
+    <p class="head">Chain</p>
+    <input class="input-chain" type="text" placeholder="AntiBug Testnet" />
+
+    <p class="head">Address</p>
+    <input class="input-address" type="text" placeholder="0x5B38D∙∙∙eddC4(100 ether)" />
+
+    <p class="head">Gas Limit</p>
+    <input class="input-gaslimit" type="number" placeholder="3000000" />
+
+    <p class="head">Value</p>
+    <div class="input-value">
+      <input class="input-value__value" type="number" placeholder="Value" />
+      <input class="input-value__with" type="text" placeholder="ETH" />
+    </div>
+
+    <p class="head">Contract</p>
+    <input class="input-contract" type="text" placeholder="EtherStore - reentrancy.sol" />
+
+    <button class="button-deploy" id="button-deploy">Deploy</button>
+  </div>
+  <%-include('script.ejs') %>
+</body>
+
+</html>
+
 </html>

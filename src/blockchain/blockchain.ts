@@ -7,13 +7,7 @@ export default class AntibugChain {
   private chain: Block[];
   private blockByNumber: Map<bigint, Block> = new Map();
   private receiptByTxHash: Map<string, any> = new Map();
-  constructor({
-    common,
-    genesisBlock,
-  }: {
-    common: Common;
-    genesisBlock: Block;
-  }) {
+  constructor({ common, genesisBlock, }: { common: Common; genesisBlock: Block; }) {
     this.common = common;
     this.chain = [genesisBlock];
     this.blockByNumber.set(genesisBlock.header.number, genesisBlock);

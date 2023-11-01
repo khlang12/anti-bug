@@ -3,14 +3,15 @@ import * as ejs from "ejs";
 import * as fs from "fs";
 
 export class ViewProvider implements vscode.WebviewViewProvider {
+  public view?: vscode.WebviewView;
+
   private _extensionUri: vscode.Uri;
   private _viewType: string;
-  private _view?: vscode.WebviewView;
   private _cssFile?: string;
   private _scriptFile?: string;
   private _htmlFile?: string;
   private _callback?: (data: { type: string; value: any }) => void;
-  private _data?: {
+  private _initialData?: {
     [key: string]: any;
   };
   constructor({
@@ -19,18 +20,21 @@ export class ViewProvider implements vscode.WebviewViewProvider {
     cssFile,
     scriptFile,
     htmlFile,
+    initialData,
   }: {
     extensionUri: vscode.Uri;
     viewType: string;
     cssFile?: string;
     scriptFile?: string;
     htmlFile?: string;
+    initialData?: { [key: string]: any };
   }) {
     this._extensionUri = extensionUri;
     this._viewType = viewType;
     this._cssFile = cssFile;
     this._scriptFile = scriptFile;
     this._htmlFile = htmlFile;
+    this._initialData = initialData;
   }
 
   public resolveWebviewView(
@@ -38,7 +42,7 @@ export class ViewProvider implements vscode.WebviewViewProvider {
     context: vscode.WebviewViewResolveContext<unknown>,
     token: vscode.CancellationToken
   ): void | Thenable<void> {
-    this._view = webviewView;
+    this.view = webviewView;
 
     webviewView.webview.options = {
       enableScripts: true,
@@ -49,7 +53,9 @@ export class ViewProvider implements vscode.WebviewViewProvider {
 
     // handle message
     webviewView.webview.onDidReceiveMessage((data) => {
-      this._callback?.(data);
+      if (this._callback) {
+        this._callback(data);
+      }
     });
   }
 
@@ -71,8 +77,8 @@ export class ViewProvider implements vscode.WebviewViewProvider {
     this._htmlFile = htmlFile;
   }
 
-  public setData(data: { [key: string]: any }) {
-    this._data = data;
+  public setInitialData(data: { [key: string]: any }) {
+    this._initialData = data;
   }
 
   public setCss(file: string) {
@@ -88,7 +94,7 @@ export class ViewProvider implements vscode.WebviewViewProvider {
   }
 
   public setListner(callback: (data: { type: string; value: any }) => void) {
-    this._callback = callback;
+    this._callback = callback.bind(this);
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
@@ -141,7 +147,7 @@ export class ViewProvider implements vscode.WebviewViewProvider {
         styleResetUri,
         styleCommonUri,
         styleMainUri,
-        ...this._data,
+        ...this._initialData,
         cspSource: webview.cspSource,
         nonce,
       },
