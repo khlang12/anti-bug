@@ -100,19 +100,73 @@
 </head>
 
 <body>
+    <script>
+
+        document.addEventListener("DOMContentLoaded", async function () {
+
+            // tab action 구현
+            const tabLinks = document.querySelectorAll(".tab-link");
+            const tabContents = document.querySelectorAll(".tab-content");
+
+            tabLinks.forEach(function (link) {
+                link.addEventListener("click", function () {
+                    const tabId = this.getAttribute("data-tab");
+
+                    tabLinks.forEach(function (tabLink) {
+                        tabLink.classList.remove("current");
+                    });
+                    tabContents.forEach(function (tabContent) {
+                        tabContent.classList.remove("current");
+                    });
+
+                    this.classList.add("current");
+                    document.getElementById(tabId).classList.add("current");
+                });
+            });
+
+            // toggle action 구현
+            const toggleButton = document.getElementById("card-button");
+            const toggleContent = document.getElementById("card-content");
+
+            toggleButton.addEventListener("click", function () {
+                if (toggleContent.style.display === "none" || toggleContent.style.display === "") {
+                    toggleContent.style.display = "block";
+                } else {
+                    toggleContent.style.display = "none";
+                }
+            });
+
+            // abi function name 가져오기
+            const test = window.location.href;
+            const testtest = document.getElementById('function-test');
+            testtest.textContent = test.toString();
+
+            vscode.webview.onDidReceiveMessage(message => {
+                if (message.abiNames) {
+                    const abiNames = message.abiNames;
+                    console.log('Received abiNames: ', abiNames);
+
+                    const functionNames = document.getElementById('function-names');
+                    functionNames.textContent = abiNames.toString();
+                }
+            });
+
+        });
+    </script>
+
     <div class="container">
         <ul class="tabs">
             <li class="tab-link current" data-tab="tab-1">function operation</li>
             <li class="tab-link" data-tab="tab-2">history</li>
         </ul>
 
-        <script src="deploy_result.js"></script>
-
         <div id="tab-1" class="tab-content current">
             <h3>Deployed Contract</h3>
 
             <p>function-test: </p>
             <p id="function-test"></p>
+            <p>json content: </p>
+            <p id="json-content"></p>
 
             <div class="card">
                 <button class="card-button" id="card-button" onclick="cardAction()">▼ EtherStore at ${address}</button>
