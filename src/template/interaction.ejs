@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-  <html lang="en">
-    <head>
-      <%-include('head.ejs') %>
-      <title>Interaction</title>
-    </head>
+<html lang="en">
 
-    <body>
-      <div class="test-container">
-        <input
-          class="input-address"
-          type="text"
-          placeholder="Enter your walletAddress"
-        />
-        <input
-          class="input-eth"
-          type="text"
-          placeholder="Enter eth price to send"
-        />
-        <button class="send-eth">RUN</button>
-      </div>
-      <%-include('script.ejs') %>
-    </body>
-  </html>
+<head>
+  <%-include('head.ejs') %>
+    <title>Interaction</title>
+</head>
+
+<body>
+  <form class="send-interaction">
+    <select class="send-interaction__address">
+      <% accounts.forEach(account=> { %>
+        <option value="<%= account.privateKey %>">
+          <%= account.address %>(<%= account.balance.toString() %>)
+        </option>
+        <% }); %>
+    </select>
+    <input class="send-interaction__to" type="text" placeholder="Enter your walletAddress" />
+    <input class="send-interaction__eth" type="number" placeholder="Enter eth price to send" />
+    <button class="send-interaction__send">RUN</button>
+  </form>
+  <%-include('script.ejs') %>
+</body>
+
+</html>
+
 </html>
