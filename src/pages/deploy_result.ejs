@@ -101,7 +101,6 @@
 
 <body>
     <script>
-
         document.addEventListener("DOMContentLoaded", async function () {
 
             // tab action 구현
@@ -141,15 +140,15 @@
             const testtest = document.getElementById('function-test');
             testtest.textContent = test.toString();
 
-            vscode.webview.onDidReceiveMessage(message => {
-                if (message.abiNames) {
+            window.addEventListener('message', event => {
+                const message = event.data;
+                if (message.command === 'sendAbiNames') {
                     const abiNames = message.abiNames;
-                    console.log('Received abiNames: ', abiNames);
 
                     const functionNames = document.getElementById('function-names');
-                    functionNames.textContent = abiNames.toString();
+                    functionNames.textContent = abiNames;
                 }
-            });
+            })
 
         });
     </script>
@@ -179,6 +178,7 @@
                             <!-- <button id="function-names">${function} 동적생성</button> -->
                             <p>function-names: </p>
                             <p id="function-names"></p>
+                            <p> 여기에 abiNames 변수 내용을 출력하고 싶습니다. <%= abiNames.toString() %> </p>
                             <!-- <textarea placeholder="동적생성"></textarea> -->
                         </div>
 
