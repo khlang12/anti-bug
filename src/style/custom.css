@@ -17,12 +17,17 @@ button {
 
 .valuewith {
     display: flex;
-    margin: 0 0 20px 0;
 }
 
 .send-interaction__address {
     width: 100%;
     padding: 4px;
+}
+
+.send-interaction__contract {
+    width: 100%;
+    padding: 4px;
+    margin: 0 0 20px 0;
 }
 
 .input-value__value {

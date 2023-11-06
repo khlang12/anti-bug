@@ -33,7 +33,7 @@
 
       <p class="head">Value</p>
       <div class="valuewith">
-        <input class="send-interaction__eth" type="number" placeholder="Value" />
+        <input class="send-interaction__eth" type="number" placeholder="10" />
         <select class="send-interaction__unit">
           <option value="eth">ETH</option>
           <option value="wei">Wei</option>
@@ -41,6 +41,11 @@
           <option value="finney">Finney</option>
         </select>
       </div>
+
+      <p class="head">Contract</p>
+      <select class="send-interaction__contract" id="solFileDropdown">
+      </select>
+
 
       <button class="send-interaction__send">Deploy</button>
     </form>
