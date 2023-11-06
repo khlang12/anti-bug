@@ -27,8 +27,9 @@ export default async function deployListener(context: vscode.ExtensionContext) {
             htmlFilePath = vscode.Uri.file(path.join(context.extensionPath, 'src/pages/deploy_result.ejs'));
             htmlContent = await fs.promises.readFile(htmlFilePath.fsPath, 'utf-8');
             deployPanel.webview.html = htmlContent;
+            console.log('Deploy Result --- htmlFilePath: ', htmlFilePath);
         } catch (error) {
-            console.error('Error loading HTML content: ', error);
+            console.error('Deploy Result --- Error loading HTML content: ', error);
         }
 
         try {
@@ -36,24 +37,29 @@ export default async function deployListener(context: vscode.ExtensionContext) {
             const abiJson = await fs.promises.readFile(abiFilePath.fsPath, 'utf-8');
             const abiData = JSON.parse(abiJson);
             const abiNames: string[] = abiData.abis.map((abi: { name: string }) => abi.name);
-            console.log('ABI function names: ', abiNames);
 
-            deployPanel.webview.postMessage({ abiNames });
+            if (!deployPanel) {
+                console.log('Not deployPanel');
+                return;
+            }
+            deployPanel.webview.postMessage({ command: 'sendAbiNames', abiNames });
+            console.log('Deploy Result --- Sent ABI names: ', abiNames);
 
         } catch (error) {
-            console.error('Error loading ABI content: ', error);
+            console.error('Deploy Result --- Error loading ABI content: ', error);
         }
-
 
         deployPanel.onDidDispose(() => {
             deployPanel = undefined;
         });
     }
 
-    deployPanel.webview.onDidReceiveMessage((message: { command: string; }) => {
-        if (message.command === 'deployClicked') {
-            deployListener(context);
-        }
-    });
+
+
+    // deployPanel.webview.onDidReceiveMessage((message: { command: string; }) => {
+    //     if (message.command === 'deployClicked') {
+    //         deployListener(context);
+    //     }
+    // });
 }
 

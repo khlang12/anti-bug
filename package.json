@@ -48,34 +48,8 @@
     "commands": [
       {
         "category": "antibug",
-        "command": "antibug.welcomeView",
-        "title": "Welcome View"
-      },
-      {
-        "category": "antibug",
-        "command": "antibug.compile",
-        "title": "AntiBug Compile"
-      },
-      {
-        "category": "antibug",
-        "command": "antibug.security",
-        "title": "AntiBug Security Analysis"
-      },
-      {
-        "category": "antibug",
-        "command": "antibug.solfile",
-        "title": "AntiBug Open SOL file"
-      },
-      {
-        "category": "antibug",
-        "command": "antibug.test",
-        "title": "AntiBug Test"
-      },
-      {
-        "category": "antibug",
-        "command": "antibug.auditreport",
-        "title": "AntiBug Audit Report",
-        "comment": "Markdown Viewer"
+        "command": "sendAbiNames",
+        "title": "Send ABI names"
       }
     ]
   },
