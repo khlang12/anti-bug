@@ -96,5 +96,6 @@ export async function activate(context: vscode.ExtensionContext) {
     )
   );
 
-  
+  // const deployPanel = 이렇게 여기서 js랑 연결해서 ejs를 구현하는 게 나을듯
+
 }

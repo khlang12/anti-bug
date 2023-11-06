@@ -4,22 +4,47 @@
 
 <head>
   <%-include('head.ejs') %>
-    <title>Interaction</title>
+    <title>Deploy & Function Interaction</title>
 </head>
 
 <body>
-  <form class="send-interaction">
-    <select class="send-interaction__address">
-      <% accounts.forEach(account=> { %>
-        <option value="<%= account.privateKey %>">
-          <%= account.address %>(<%= account.balance.toString() %>)
-        </option>
-        <% }); %>
-    </select>
-    <input class="send-interaction__to" type="text" placeholder="Enter your walletAddress" />
-    <input class="send-interaction__eth" type="number" placeholder="Enter eth price to send" />
-    <button class="send-interaction__send">RUN</button>
-  </form>
+  <div class="sidebar-container">
+    <button class="button-compile" id="button-compile">Compile</button>
+
+    <form class="send-interaction">
+
+      <p class="head">Chain</p>
+      <input class="" type="text" placeholder="AntiBug Testnet" disabled />
+
+      <p class="head">Account</p>
+      <select class="send-interaction__address">
+        <% accounts.forEach(account=> { %>
+          <option value="<%= account.privateKey %>">
+            <%= account.address %>(<%= account.balance.toString() %>)
+          </option>
+          <% }); %>
+      </select>
+
+      <p class="head">Gas Limit</p>
+      <input class="send-interaction__gasLimit" type="number" placeholder="3000000" />
+
+      <p class="head">받는 계좌 필요해?</p>
+      <input class="send-interaction__to" type="text" placeholder="받는 계좌 필요해?" />
+
+      <p class="head">Value</p>
+      <div class="valuewith">
+        <input class="send-interaction__eth" type="number" placeholder="Value" />
+        <select class="send-interaction__unit">
+          <option value="eth">ETH</option>
+          <option value="wei">Wei</option>
+          <option value="gwei">Gwei</option>
+          <option value="finney">Finney</option>
+        </select>
+      </div>
+
+      <button class="send-interaction__send">Deploy</button>
+    </form>
+  </div>
   <%-include('script.ejs') %>
 </body>
 

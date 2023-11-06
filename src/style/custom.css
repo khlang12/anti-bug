@@ -15,8 +15,14 @@ button {
     width: 30px;
 }
 
-.input-value {
+.valuewith {
     display: flex;
+    margin: 0 0 20px 0;
+}
+
+.send-interaction__address {
+    width: 100%;
+    padding: 4px;
 }
 
 .input-value__value {

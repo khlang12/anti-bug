@@ -7,4 +7,3 @@
     vscode.postMessage({ type: "" });
   });
 })();
-

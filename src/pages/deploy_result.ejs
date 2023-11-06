@@ -102,6 +102,8 @@
 <body>
     <script>
         document.addEventListener("DOMContentLoaded", async function () {
+            const vscode = acquireVsCodeApi();
+            console.log(vscode);
 
             // tab action 구현
             const tabLinks = document.querySelectorAll(".tab-link");
@@ -171,14 +173,16 @@
                 <button class="card-button" id="card-button" onclick="cardAction()">▼ EtherStore at ${address}</button>
                 <div class="card-content" id="card-content">
                     <div class="card-balance">
-                        <h4>Balance : ${value} ${ETH}</h4>
+                        <h4>Balance : <%= value %>
+                                <%= ETH %>
+                        </h4>
 
                         <!-- button이 function 개수만큼 생겨야 하는 부분 -->
                         <div class="card-balance__funciton" id="function-button">
                             <!-- <button id="function-names">${function} 동적생성</button> -->
                             <p>function-names: </p>
                             <p id="function-names"></p>
-                            <p> 여기에 abiNames 변수 내용을 출력하고 싶습니다. <%= abiNames.toString() %> </p>
+                            <p>이건 어떠냐 <%= abiNames.join(', ') %></p>
                             <!-- <textarea placeholder="동적생성"></textarea> -->
                         </div>
 
