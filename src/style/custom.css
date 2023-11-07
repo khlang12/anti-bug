@@ -1,5 +1,6 @@
 button {
     margin: 10px 0;
+    border-radius: 5pxㅎ;
 }
 
 input, input::placeholder, select {
@@ -123,6 +124,27 @@ input, input::placeholder, select {
     background-color: #d22635;
 }
 
+.send-eth__gas:hover,
+.send-eth__to:hover,
+.send-eth__eth:hover,
+.compile__solFiles:focus,
+.send-eth__select:focus,
+.send-eth__unit:focus,
+.send-eth__gas:focus,
+.send-eth__to:focus,
+.send-eth__eth:focus {
+    border: 1px solid #e9950c;
+    border-radius: 5px;
+}
+
+.compile__solFiles:focus,
+.send-eth__select:focus,
+.send-eth__unit:focus,
+.send-eth__gas:focus,
+.send-eth__to:focus,
+.send-eth__eth:focus {
+    outline: none;
+}
 
 #toggle-content {
     display: none;

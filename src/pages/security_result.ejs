@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- <script src="src/controller/security.js"></script> -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Analysis</title>
+    <style>
+        body {
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        ul.tabs {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        ul.tabs li {
+            width: auto;
+            background: none;
+            color: #ffffff;
+            display: inline-block;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        ul.tabs li.current {
+            background: #82C0DA;
+            color: #222;
+
+        }
+
+        .tab-content {
+            display: none;
+            background: #82C026;
+            color: #000000;
+            padding: 15px;
+        }
+
+        .tab-content.current {
+            display: inherit;
+        }
+
+        .toggle-analysis__result {
+            margin: 10px 0;
+        }
+
+        .toggle-analysis__button {
+            margin: 5px 0;
+            background-color: purple;
+            font-size: medium;
+        }
+
+        #toggle-contract__content,
+        #toggle-callGraph__content,
+        #toggle-abi__content,
+        #toggle-evmBytecode__content,
+        #toggle-storage__content,
+        #toggle-blacklist__content {
+            display: none;
+        }
+
+        table {
+            border-collapse: collapse;
+            background-color: lightcoral;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        div.scrollable-table {
+            width: 100%;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <ul class="tabs">
+            <li class="tab-link current" data-tab="tab-1">Security Check</li>
+            <li class="tab-link" data-tab="tab-2">Contract Analysis</li>
+            <li class="tab-link" data-tab="tab-3">Comparable Function Code</li>
+        </ul>
+
+        <script>
+            // tab action 구현
+            document.addEventListener("DOMContentLoaded", function () {
+                const tabLinks = document.querySelectorAll(".tab-link");
+                const tabContents = document.querySelectorAll(".tab-content");
+
+                tabLinks.forEach(function (link) {
+                    link.addEventListener("click", function () {
+                        const tabId = this.getAttribute("data-tab");
+
+                        tabLinks.forEach(function (tabLink) {
+                            tabLink.classList.remove("current");
+                        });
+                        tabContents.forEach(function (tabContent) {
+                            tabContent.classList.remove("current");
+                        });
+
+                        this.classList.add("current");
+                        document.getElementById(tabId).classList.add("current");
+                    });
+                });
+            });
+
+            // toggle action 구현
+            document.addEventListener("DOMContentLoaded", function () {
+                function toggleElement(element) {
+                    if (element.style.display === "none" || element.style.display === "") {
+                        element.style.display = "block";
+                    } else {
+                        element.style.display = "none";
+                    }
+                }
+
+                const buttons = [
+                    "toggle-contract__button",
+                    "toggle-callGraph__button",
+                    "toggle-abi__button",
+                    "toggle-evmBytecode__button",
+                    "toggle-storage__button",
+                    "toggle-blacklist__button",
+                ];
+
+                buttons.forEach(function (buttonId) {
+                    const button = document.getElementById(buttonId);
+                    const contentId = buttonId.replace("button", "content");
+                    const content = document.getElementById(contentId);
+
+                    button.addEventListener("click", function () {
+                        toggleElement(content);
+                    });
+                });
+            });
+        </script>
+
+        <div id="tab-1" class="tab-content current">
+            <h3>Vulnerability Detect Result</h3>
+
+            <div>
+                <p>여기에 markdown이 올지 그냥 webview로 올지 미정</p>
+                <p>Audit report의 요약본 제공</p>
+            </div>
+
+        </div>
+
+        <div id="tab-2" class="tab-content">
+            <h3>Contract Analysis Result</h3>
+
+            <div>
+                <div class="toggle-analysis__result">
+                    <button class="toggle-analysis__button" id="toggle-contract__button" onclick="toggleAction()">
+                        Contract Summary</button>
+                    <div class="scrollable-table" id="toggle-contract__content">
+                        <table>
+                            <tr>
+                                <th>Contract</th>
+                                <td colspan="5">EtherStore</td>
+                            </tr>
+                            <tr>
+                                <th rowspan="4">Function</th>
+                                <th>name</th>
+                                <th>visibility</th>
+                                <th>modifier</th>
+                                <th>Internal calls</th>
+                                <th>external calls</th>
+                            </tr>
+                            <tr>
+                                <td>deposit()</td>
+                                <td>public</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>withdraw()</td>
+                                <td>public</td>
+                                <td>-</td>
+                                <td>require(bool) require(bool,string)</td>
+                                <td>msg.sender.call{value: bal}()</td>
+                            </tr>
+                            <tr>
+                                <td>getBalance()</td>
+                                <td>public</td>
+                                <td>-</td>
+                                <td> </td>
+                                <td> </td>
+                            </tr>
+                            <tr>
+                                <th>State variable</th>
+                                <td colspan="5">balances</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="toggle-analysis__result">
+                    <button class="toggle-analysis__button" id="toggle-callGraph__button" onclick="toggleAction()">
+                        Call Graph
+                    </button>
+                    <div id="toggle-callGraph__content">
+                        <p>call graph 내용</p>
+                    </div>
+                </div>
+
+                <div class="toggle-analysis__result">
+                    <button class="toggle-analysis__button" id="toggle-abi__button" onclick="toggleActionAnalysis()">
+                        ABI
+                    </button>
+                    <div id="toggle-abi__content">
+                        <p>abi 내용</p>
+                    </div>
+                </div>
+
+                <div class="toggle-analysis__result">
+                    <button class="toggle-analysis__button" id="toggle-evmBytecode__button" onclick="toggleAction()">
+                        EVM Bytecode</button>
+                    <div id="toggle-evmBytecode__content">
+                        <p>evm bytecode 내용</p>
+                    </div>
+                </div>
+
+                <div class="button-analysis__result">
+                    <button class="toggle-analysis__button" id="toggle-storage__button" onclick="toggleAction()">
+                        Storage
+                    </button>
+                    <div id="toggle-storage__content">
+                        <p>storage 내용</p>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <div id="tab-3" class="tab-content">
+            <h3>Inspect Comparable Function Code</h3>
+
+            <div>
+                <div class="toggle-analysis__result">
+                    <button class="toggle-analysis__button" id="toggle-blacklist__button" onclick="toggleAction()">
+                        ${0xb85어쩌고}</button>
+                    <div class="scrollable-table" id="toggle-blacklist__content">
+                        <table>
+                            <tr>
+                                <th>sol</th>
+                                <td>${KyberSwapElasticLM.sol}</td>
+                            </tr>
+                            <tr>
+                                <th>Contract: Function</th>
+                                <td>${KyberSwapElasticLM: withdraw() #198}</td>
+                            </tr>
+                            <tr>
+                                <th>Created Date</th>
+                                <td>${2022-09-19}</td>
+                            </tr>
+                            <tr>
+                                <th>score</th>
+                                <td>${0.8}</td>
+                            </tr>
+                            <tr>
+                                <th>EtherScan</th>
+                                <td>${http://etherscan.io/address/0xb85어쩌고}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

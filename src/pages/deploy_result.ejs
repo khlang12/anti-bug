@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deploy & Function interaction</title>
+    <style>
+        body {
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        ul.tabs {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        ul.tabs li {
+            width: auto;
+            background: none;
+            color: #ffffff;
+            display: inline-block;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        ul.tabs li.current {
+            background: #82C0DA;
+            color: #222;
+
+        }
+
+        .tab-content {
+            display: none;
+            background: #82C026;
+            color: #000000;
+            padding: 15px;
+        }
+
+        .tab-content.current {
+            display: inherit;
+        }
+
+        .card {
+            background-color: blue;
+        }
+
+        .card h3,
+        h4 {
+            color: white;
+            margin: 10px 0 3px 0;
+        }
+
+        .card-content {
+            background-color: #6d6d6d;
+            display: none;
+        }
+
+        .card-balance,
+        .card-lowLevel {
+            padding: 5px 20px 20px 20px;
+        }
+
+        .card-balance__funciton {
+            display: flex;
+        }
+
+        .card-balance__funciton textarea {
+            width: 100%;
+            resize: none;
+        }
+
+        .card-lowLevel__calldata {
+            display: flex;
+        }
+
+        .card-inline {
+            border: 2px solid #ccc;
+            margin: 0 10px;
+        }
+
+        .button-calldata {
+            margin: 2px 0;
+        }
+
+        .input-calldata {
+            margin: 2px 0;
+            width: 100%;
+            resize: none;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const vscode = acquireVsCodeApi();
+            console.log(vscode);
+
+            // tab action 구현
+            const tabLinks = document.querySelectorAll(".tab-link");
+            const tabContents = document.querySelectorAll(".tab-content");
+
+            tabLinks.forEach(function (link) {
+                link.addEventListener("click", function () {
+                    const tabId = this.getAttribute("data-tab");
+
+                    tabLinks.forEach(function (tabLink) {
+                        tabLink.classList.remove("current");
+                    });
+                    tabContents.forEach(function (tabContent) {
+                        tabContent.classList.remove("current");
+                    });
+
+                    this.classList.add("current");
+                    document.getElementById(tabId).classList.add("current");
+                });
+            });
+
+            // toggle action 구현
+            const toggleButton = document.getElementById("card-button");
+            const toggleContent = document.getElementById("card-content");
+
+            toggleButton.addEventListener("click", function () {
+                if (toggleContent.style.display === "none" || toggleContent.style.display === "") {
+                    toggleContent.style.display = "block";
+                } else {
+                    toggleContent.style.display = "none";
+                }
+            });
+
+            // abi function name 가져오기
+            const test = window.location.href;
+            const testtest = document.getElementById('function-test');
+            testtest.textContent = test.toString();
+
+            window.addEventListener('message', event => {
+                const message = event.data;
+                if (message.command === 'sendAbiNames') {
+                    const abiNames = message.abiNames;
+
+                    const functionNames = document.getElementById('function-names');
+                    functionNames.textContent = abiNames;
+                }
+            })
+
+        });
+    </script>
+
+    <div class="container">
+        <ul class="tabs">
+            <li class="tab-link current" data-tab="tab-1">function operation</li>
+            <li class="tab-link" data-tab="tab-2">history</li>
+        </ul>
+
+        <div id="tab-1" class="tab-content current">
+            <h3>Deployed Contract</h3>
+
+            <p>function-test: </p>
+            <p id="function-test"></p>
+            <p>json content: </p>
+            <p id="json-content"></p>
+
+            <div class="card">
+                <button class="card-button" id="card-button" onclick="cardAction()">▼ EtherStore at ${address}</button>
+                <div class="card-content" id="card-content">
+                    <div class="card-balance">
+                        <h4>Balance : <%= value %>
+                                <%= ETH %>
+                        </h4>
+
+                        <!-- button이 function 개수만큼 생겨야 하는 부분 -->
+                        <div class="card-balance__funciton" id="function-button">
+                            <!-- <button id="function-names">${function} 동적생성</button> -->
+                            <p>function-names: </p>
+                            <p id="function-names"></p>
+                            <p>이건 어떠냐 <%= abiNames.join(', ') %></p>
+                            <!-- <textarea placeholder="동적생성"></textarea> -->
+                        </div>
+
+                    </div>
+                    <hr class="card-inline">
+                    <div class="card-lowLevel">
+                        <h3>Low level interactions</h3>
+                        <h4>Calldata</h4>
+                        <div class="card-lowLevel__calldata">
+                            <textarea class="input-calldata" placeholder="입력하세요"></textarea>
+                            <button class="button-calldata">Transact</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tab-2" class="tab-content">
+            tab content2
+        </div>
+    </div>
+</body>
+
+</html>
