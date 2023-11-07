@@ -181,3 +181,4 @@ function encodeCallData(signature: string, name: string, args: any[]) {
   const data = iface.encodeFunctionData(name, args);
   return data;
 }
+
