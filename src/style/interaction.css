@@ -14,10 +14,25 @@
   cursor: pointer;
 }
 
-.contract {
+.contract__title {
+  display: flex;
+  justify-content: space-between;
+  column-gap: 10px;
+
+  font-size: 20px;
+  border-bottom: 1px solid #e9950c;
+  padding: 10px 0px;
+}
+
+.contract__actions {
   display: flex;
   flex-direction: column;
   row-gap: 10px;
+
+  padding: 10px 0px;
+}
+.contract__actions.hidden {
+  display: none;
 }
 
 .function__action-single {
@@ -36,8 +51,6 @@
   display: none;
 }
 
-
-
 .argument {
   display: flex;
   align-items: flex-end;
@@ -49,10 +62,23 @@
 }
 
 .function__action {
-  width: 150px;
+  max-width: 150px;
+  width: 100%;
 
   border-radius: 5px;
   background-color: #e9950c;
+}
+
+.function__action:has(+ input) {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+.function__action-single input {
+  position: relative;
+  top: 1px;
+  min-height: 100%;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
 }
 
 .function__action:hover {

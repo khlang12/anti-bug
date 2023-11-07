@@ -1,7 +1,5 @@
 import * as vscode from "vscode";
-
 import { ViewProvider } from "./provider/view-provider";
-import { DEFAULT_ACCOUNTS } from "./util/config";
 import AntibugNode from "./blockchain/node";
 import interactionListener from "./listener/interaction";
 import testcodeListener from "./listener/testcode";

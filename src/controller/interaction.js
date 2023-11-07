@@ -9,7 +9,7 @@
   const deployContractButton = document.querySelector(".contract__deploy");
   const contractAddressText = document.querySelector(".contract__address");
   const callTxButton = document.querySelector(".call-tx");
-  const contractInteractionDiv = document.querySelector(
+  const contractInteractionElement = document.querySelector(
     ".contract__interaction"
   );
 
@@ -54,7 +54,8 @@
     vscode.postMessage({
       type: "send",
       value: {
-        callData: compiledByteCode,
+        data: "0x608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550610215806100606000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80638da5cb5b1461003b578063f5a1f5b414610059575b600080fd5b610043610089565b6040516100509190610154565b60405180910390f35b610073600480360381019061006e919061010d565b6100ad565b604051610080919061016f565b60405180910390f35b60008054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6000816000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555060019050919050565b600081359050610107816101c8565b92915050565b60006020828403121561011f57600080fd5b600061012d848285016100f8565b91505092915050565b61013f8161018a565b82525050565b61014e8161019c565b82525050565b60006020820190506101696000830184610136565b92915050565b60006020820190506101846000830184610145565b92915050565b6000610195826101a8565b9050919050565b60008115159050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6101d18161018a565b81146101dc57600080fd5b5056fea26469706673582212206dcd72df54690b8b5cdf0dab48c3f2bbef7b23ef7c01535142bfe4c32f0eacfc64736f6c63430008000033",
+        // data: compiledByteCode,
         fromPrivateKey: addressSelect.value,
         value: 0, // TODO
       },
@@ -128,13 +129,6 @@
 
         if (contractAddress) {
           contractAddressText.innerHTML = contractAddress;
-
-          vscode.postMessage({
-            type: "makeFunctions",
-            value: {
-              abi,
-            },
-          });
         }
 
         break;
@@ -146,12 +140,31 @@
         const { abis, bytecodes, contract } = data.value;
         compiledByteCode = bytecodes;
 
+        console.log(abis);
+
         const onlyFunctionAbis = abis.filter(({ type }) => type === "function");
         const contractElement = document.createElement("div");
         contractElement.classList.add("contract");
 
+        const contractTitleElement = document.createElement("div");
+        const contractNameElement = document.createElement("p");
+        const contractChevronDownButtonElement = makeChevronDownButtonElement();
+        const contractActionsWrapperElement = document.createElement("div");
+        contractActionsWrapperElement.classList.add("contract__actions");
+
+        contractTitleElement.classList.add("contract__title");
+        contractTitleElement.appendChild(contractNameElement);
+        contractNameElement.innerHTML = contract;
+
+        contractElement.appendChild(contractTitleElement);
+        contractTitleElement.appendChild(contractChevronDownButtonElement);
+
+        contractChevronDownButtonElement.addEventListener("click", () => {
+          contractActionsWrapperElement.classList.toggle("hidden");
+        });
+
         const functionElements = onlyFunctionAbis.map(
-          ({ name, inputs, stateMutability, type }) => {
+          ({ name, inputs, stateMutability, type, signature }) => {
             const functionElement = document.createElement("div");
             functionElement.classList.add("function");
 
@@ -166,6 +179,8 @@
               "hidden"
             );
 
+            let argsElement = [];
+
             const actionElement = document.createElement("button");
             actionElement.innerHTML = name;
             actionElement.classList.add(stateMutability, "function__action");
@@ -174,15 +189,40 @@
             if (inputs.length === 1) {
               const inputElement = document.createElement("input");
               inputElement.placeholder = `${inputs[0].type} ${inputs[0].name}`;
+              argsElement = [inputElement];
               functionActionSingleElement.appendChild(inputElement);
             }
 
             if (inputs.length > 1) {
               const chevronDownButtonElement = makeChevronDownButtonElement();
-              const argsElement = makeMultiArgsElements(inputs);
+              chevronDownButtonElement.addEventListener("click", () => {
+                functionActionMultiElement.classList.toggle("hidden");
+              });
               functionActionSingleElement.appendChild(chevronDownButtonElement);
+
+              argsElement = makeMultiArgsElements(inputs);
               functionActionMultiElement.replaceChildren(...argsElement);
             }
+
+            actionElement.addEventListener("click", () => {
+              console.log(argsElement);
+              const args = argsElement.map(
+                (argElement) => argElement.childNodes[1].value
+              );
+
+              console.log(contractAddressText.innerHTML);
+              vscode.postMessage({
+                type: "call",
+                value: {
+                  signature,
+                  args,
+                  name,
+                  to: contractAddressText.innerHTML,
+                  fromPrivateKey: addressSelect.value,
+                  value: ethInput.value, // TODO
+                },
+              });
+            });
 
             functionElement.replaceChildren(functionActionSingleElement);
             functionElement.appendChild(functionActionMultiElement);
@@ -190,8 +230,12 @@
             return functionElement;
           }
         );
-        contractElement.replaceChildren(...functionElements);
-        contractInteractionDiv.appendChild(contractElement);
+        contractActionsWrapperElement.replaceChildren(...functionElements);
+
+        contractElement.appendChild(contractTitleElement);
+        contractElement.appendChild(contractActionsWrapperElement);
+
+        contractInteractionElement.appendChild(contractElement);
       }
     }
   });
@@ -225,9 +269,7 @@
       "dropdown-action"
     );
     chevronDownButtonElement.style.cursor = "pointer";
-    chevronDownButtonElement.addEventListener("click", () => {
-      functionActionMultiElement.classList.toggle("hidden");
-    });
+
     chevronDownButtonElement.appendChild(chevronDownIconElement);
     return chevronDownButtonElement;
   }

@@ -1,10 +1,16 @@
-import { FeeMarketEIP1559Transaction } from "@ethereumjs/tx";
+import * as path from "path";
+import * as vscode from "vscode";
+import * as ethers from "ethers";
+
+import {
+  BlobEIP4844Transaction,
+  FeeMarketEIP1559Transaction,
+  LegacyTransaction,
+} from "@ethereumjs/tx";
 import AntibugNode from "../blockchain/node";
 import { bigIntToHex, bytesToHex, hexToBytes } from "@ethereumjs/util";
 import { privateKeyToAddress } from "../util";
 import { exec } from "child_process";
-import * as path from "path";
-import * as vscode from "vscode";
 import { DEFAULT_ACCOUNTS } from "../util/config";
 
 export default async function interactionListener(
@@ -42,8 +48,15 @@ export default async function interactionListener(
     }
 
     case "send": {
-      const { data, maxFeePerGas, gasLimit, fromPrivateKey, value, to } =
-        event.value;
+      const {
+        data,
+        callData,
+        maxFeePerGas,
+        gasLimit,
+        fromPrivateKey,
+        value,
+        to,
+      } = event.value;
       const latestBlock = antibugNode.getLatestBlock();
       const estimatedGasLimit = antibugNode.getEstimatedGasLimit(latestBlock);
       const baseFee = latestBlock.header.calcNextBaseFee();
@@ -66,6 +79,7 @@ export default async function interactionListener(
       const from = privateKeyToAddress(fromPrivateKey).toString();
       const fromBalance = await antibugNode.getBalance(from);
       const toBalance = to ? await antibugNode.getBalance(to) : 0n;
+
       this.view.webview.postMessage({
         type: "receipt",
         value: {
@@ -83,21 +97,27 @@ export default async function interactionListener(
       });
       break;
     }
-
     case "call": {
-      const { callData, fromPrivateKey, to } = event.value;
+      const { signature, name, args, value, fromPrivateKey, to } = event.value;
+
+      const latestBlock = antibugNode.getLatestBlock();
+      const estimatedGasLimit = antibugNode.getEstimatedGasLimit(latestBlock);
+      const baseFee = latestBlock.header.calcNextBaseFee();
+      const callData = encodeCallData(signature, name, args);
+
       const callTxData = {
-        data: callData,
         to,
-        maxFeePerGas: 3000000n,
-        gasLimit: 3000000n,
+        data: callData,
+        maxFeePerGas: baseFee,
+        gasLimit: estimatedGasLimit,
         nonce: await antibugNode.getNonce(fromPrivateKey),
       };
+
       const callTx = FeeMarketEIP1559Transaction.fromTxData(callTxData).sign(
         hexToBytes(fromPrivateKey)
       );
       const result = await antibugNode.runTx({ tx: callTx });
-      console.log(bytesToHex(result.execResult.returnValue));
+      console.log(bytesToHex(result.execResult.returnValue).toString());
       break;
     }
 
@@ -121,11 +141,12 @@ export default async function interactionListener(
           const jsonFilePath = path.join(directoryPath, jsonFileName);
           const jsonFile = require(jsonFilePath);
           const { abis, bytecodes, contract } = jsonFile;
+          const newABIs = makeABIEnocde(abis);
 
           this.view.webview.postMessage({
             type: "compiled",
             value: {
-              abis,
+              abis: newABIs,
               bytecodes,
               contract,
             },
@@ -135,10 +156,28 @@ export default async function interactionListener(
         console.log(e);
       }
     }
-
-    case "makeFunctions": {
-      const { abi } = event.value;
-      console.log(abi);
-    }
   }
+}
+
+function makeABIEnocde(abis: any) {
+  const ABI = abis.map((data: any) => {
+    const { name, inputs, type } = data;
+    if (type !== "function") { return data; }
+
+    const inputsTypes = inputs.map(({ type }: any) => type).join(",");
+    const signature = `function ${name}(${inputsTypes})`;
+    const newABI = {
+      ...data,
+      signature,
+    };
+
+    return newABI;
+  });
+  return ABI;
+}
+
+function encodeCallData(signature: string, name: string, args: any[]) {
+  const iface = new ethers.utils.Interface([signature]);
+  const data = iface.encodeFunctionData(name, args);
+  return data;
 }
