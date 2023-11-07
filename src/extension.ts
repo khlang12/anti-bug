@@ -12,7 +12,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const primaryPanelInteractionProvider = new ViewProvider({
     extensionUri: context.extensionUri,
     viewType: "antibug.primaryPanel.interaction",
-    cssFile: "interaction.css",
+    cssFile: "custom.css",
     scriptFile: "interaction.js",
     htmlFile: "interaction.ejs",
   });
@@ -53,12 +53,14 @@ export async function activate(context: vscode.ExtensionContext) {
   const primaryPanelSecurityProvider = new ViewProvider({
     extensionUri: context.extensionUri,
     viewType: "antibug.security",
-    cssFile: "",
+    cssFile: "custom.css",
     scriptFile: "security.js",
     htmlFile: "security.ejs",
   });
 
-  primaryPanelSecurityProvider.setListner(securityListener);
+  primaryPanelSecurityProvider.setListner((data) => {
+    securityListener(context, data);
+  });
 
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -71,7 +73,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const primaryPanelTestcodeProvider = new ViewProvider({
     extensionUri: context.extensionUri,
     viewType: "antibug.testcode",
-    cssFile: "",
+    cssFile: "custom.css",
     scriptFile: "testcode.js",
     htmlFile: "testcode.ejs",
   });

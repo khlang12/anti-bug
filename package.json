@@ -25,12 +25,12 @@
       "antibug": [
         {
           "type": "webview",
-          "name": "Interaction",
+          "name": "Deploy & Function Interaction",
           "id": "antibug.primaryPanel.interaction"
         },
         {
           "type": "webview",
-          "name": "Deploy & Function Interaction",
+          "name": "사용안함 Deploy",
           "id": "antibug.deploy"
         },
         {
@@ -118,6 +118,7 @@
     "@types/markdown-it": "^13.0.5",
     "ejs": "^3.1.9",
     "ethers": "^5.7.2",
+    "markdown-it": "^13.0.2",
     "solc": "^0.8.22"
   }
 }

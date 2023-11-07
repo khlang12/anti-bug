@@ -1,29 +1,29 @@
-.container {
-    padding: 10px !important;
-    margin: 10px;
-}
-
 button {
     margin: 10px 0;
 }
 
-.head {
-    margin: 20px 0 10px 0;
+input, input::placeholder, select {
+    font-size: var(--vscode-font-size);
 }
 
-.dropdown {
-    width: 30px;
+.head {
+    margin: 15px 0 10px 0;
+    font-weight: bold;
 }
 
 .send-eth {
     display: flex;
     flex-direction: column;
-    row-gap: 10px;
 }
 
 .send-eth__address {
     display: flex;
     align-items: center;
+    column-gap: 10px;
+}
+
+.send-eth__value {
+    display: flex;
     column-gap: 10px;
 }
 
@@ -36,7 +36,7 @@ button {
     justify-content: space-between;
     column-gap: 10px;
 
-    font-size: 20px;
+    font-size: 10px;
     border-bottom: 1px solid #e9950c;
     padding: 10px 0px;
 }
@@ -129,6 +129,11 @@ button {
     margin: 0 0 10px 0;
 }
 
+.toggle-button__align {
+    display: flex;
+    width: 100%;
+}
+
 .toggle-button__switch {
     position: relative;
     width: 40px;
@@ -137,6 +142,9 @@ button {
     border: none;
     border-radius: 34px;
     cursor: pointer;
+    margin-top: auto;
+    margin-bottom: 5px;
+    margin-left: auto;
 }
 
 .slider {
@@ -147,7 +155,7 @@ button {
     background-color: white;
     border-radius: 50%;
     left: 4px;
-    bottom: 3px;
+    bottom: 4px;
     transition: transform 0.4s;
 }
 

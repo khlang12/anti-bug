@@ -1,50 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-  <html lang="en">
-    <head>
-      <%-include('head.ejs') %>
-      <title>Interaction</title>
-    </head>
+<html lang="en">
 
-    <body class="container">
-      <form class="send-eth">
-        <div class="send-eth__address">
-          <select class="send-eth__select"></select>
-          <div type="button" class="send-eth__copy">
-            <i class="far fa-copy"></i>
-          </div>
-        </div>
+<head>
+  <%-include('head.ejs') %>
+    <title>Interaction</title>
+</head>
 
-        <input
-          class="send-eth__to"
-          type="text"
-          placeholder="Enter your walletAddress"
-        />
-        <input
-          class="send-eth__eth"
-          type="number"
-          placeholder="Enter eth price to send"
-        />
-        <button type="submit" class="send-eth__send">SEND</button>
-      </form>
-      <div class="contract">
-        <p class="contract__address">Contract: -</p>
-        <button class="contract__deploy">Deploy</button>
+<body class="container">
+  <p class="head">Contract</p>
+  <div class="compile">
+    <select class="compile__solFiles"></select>
+    <button class="compile__submit">Copile</button>
+  </div>
 
-        <div class="contract__interaction"></div>
+  <p class="head">Chain</p>
+  <input class="" type="text" placeholder="AntiBug Testnet" disabled />
+
+  <form class="send-eth">
+    <p class="head">Account</p>
+    <div class="send-eth__address">
+      <select class="send-eth__select"></select>
+      <div type="button" class="send-eth__copy">
+        <i class="far fa-copy"></i>
       </div>
+    </div>
 
-      <button class="call-tx">Call</button>
-      <div class="compile">
-        <select class="compile__solFiles"></select>
-        <button class="compile__submit">Copile</button>
-      </div>
+    <p class="head">Gas Limit</p>
+    <input class="send-eth__gas" type="number" value="3000000" />
 
-      <%-include('script.ejs') %>
-      <script
-        nonce="<%= nonce %>"
-        src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"
-      ></script>
-    </body>
-  </html>
+    <p class="head">Wallet Address</p>
+    <input class="send-eth__to" type="text" placeholder="Enter your walletAddress" />
+
+    <p class="head">Value</p>
+    <div class="send-eth__value">
+      <input class="send-eth__eth" type="number" value="0" />
+      <select class="send-eth__unit">
+        <option value="eth">ETH</option>
+        <option value="wei">Wei</option>
+        <option value="gwei">Gwei</option>
+        <option value="finney">Finney</option>
+      </select>
+    </div>
+    <button type="submit" class="send-eth__send">Send</button>
+  </form>
+  
+  <div class="contract">
+    <p class="contract__address">Contract: -</p>
+    <button class="contract__deploy">Deploy</button>
+
+    <div class="contract__interaction"></div>
+  </div>
+
+  <button class="call-tx">Call</button>
+
+  <%-include('script.ejs') %>
+    <script nonce="<%= nonce %>" src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"></script>
+</body>
+
+</html>
+
 </html>
