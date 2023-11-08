@@ -37,8 +37,10 @@ input, input::placeholder, select {
     justify-content: space-between;
     column-gap: 10px;
 
-    font-size: 10px;
-    border-bottom: 1px solid #e9950c;
+    font-size: 15px;
+    font-weight: bold;
+    border-top: 1px solid #e9950c;
+    border-bottom: 1px solid #3d3d3d;
     padding: 10px 0px;
 }
 

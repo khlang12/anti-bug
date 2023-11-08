@@ -19,7 +19,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const bindedInteractionListener = interactionListener.bind(
     primaryPanelInteractionProvider,
-    antibugNode
+    antibugNode,
   );
   primaryPanelInteractionProvider.setListner(bindedInteractionListener);
 
