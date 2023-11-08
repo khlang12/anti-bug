@@ -51,14 +51,15 @@ export default async function interactionListener(
       });
       break;
     }
-    
+
     case "webview": {
       console.log("webview 실행중...");
-      const { panel, title, filePath } = event.value;
-      console.log("webview panel --- ", panel);
-      console.log("webview title --- ", title);
-      console.log("webview filePath --- ", filePath);
-      openPanel(panel, title, filePath);
+      const { panel, title, filePath, abis, bytecodes } = event.value;
+      openPanel(panel, title, filePath, { abis, bytecodes });
+      // this.view.webview.postMessage({
+      //   type: "ts2result",
+      //   value: "12234",
+      // });
       break;
     }
 
@@ -170,31 +171,29 @@ export default async function interactionListener(
           console.log("jsonFile compile --- ", jsonFile);
 
           const contractData: Record<string, { abis: any[], bytecodes: string, contract: any }> = {};
+          let contractBytecode;
           for (const contractName in jsonFile) {
             if (jsonFile.hasOwnProperty(contractName)) {
               const contractInfo = jsonFile[contractName];
               const { abis, bytecodes } = contractInfo;
               const contract = contractName;
               contractData[contractName] = { abis, bytecodes, contract };
-              const newABIs = makeABIEncode(contractData[contractName].abis);
+              contractBytecode = contractData[contractName].bytecodes;
 
-              console.log("contractData deploy --- ", contractData);
-
-              // 여기서 contract 개수 만큼 (지금은 2개) compileJson 이벤트를 보낸단 말이지
-              // this.view.webview.postMessage({
-              //   type: "compileJson",
-              //   value: contractData
-              // });
+              console.log("contractData compile --- ", contractData);
+              console.log("contractBytecode compile --- ", contractBytecode);
             }
           }
+          console.log("contractData 보낸 거 --- ", contractData);
+          console.log("contractBytecode 보낸 거 --- ", contractBytecode);
+
           this.view.webview.postMessage({
             type: "compileJson",
-            value: contractData
+            value: {
+              contractData,
+              contractBytecode,
+            }
           });
-
-          // 여기서 웹뷰 열어도 될듯
-
-
         });
       } catch (e) {
         console.log(e);
@@ -224,22 +223,35 @@ export default async function interactionListener(
           const jsonFile = require(jsonFilePath);
 
           const contractData: Record<string, { abis: any[], bytecodes: string, contract: any }> = {};
+          let contractBytecode;
           for (const contractName in jsonFile) {
             if (jsonFile.hasOwnProperty(contractName)) {
               const contractInfo = jsonFile[contractName];
               const { abis, bytecodes } = contractInfo;
               const contract = contractName;
               contractData[contractName] = { abis, bytecodes, contract };
-              const newABIs = makeABIEncode(contractData[contractName].abis);
-              console.log("contractData[contractName] deploy --- ", contractData[contractName]);
+              contractBytecode = contractData[contractName].bytecodes;
 
+              const newABIs = makeABIEncode(contractData[contractName].abis);
+              
+              console.log("contractData deploy --- ", contractData);
+              console.log("contractBytecode deploy --- ", contractBytecode);
+            
               this.view.webview.postMessage({
                 type: "compiled",
                 value: {
                   abis: newABIs,
-                  bytecodes,
-                  contract,
+                  bytecodes: bytecodes,
+                  contract: contract,
                 },
+              });
+
+              this.view.webview.postMessage({
+                type: "compileJson",
+                value: {
+                  contractData,
+                  contractBytecode,
+                }
               });
 
             }
@@ -275,7 +287,12 @@ function encodeCallData(signature: string, name: string, args: any[]) {
   return data;
 }
 
-async function openPanel(panel: string | undefined, title: string, filePath: string) {
+async function openPanel(
+  panel: string | undefined,
+  title: string,
+  filePath: string,
+  value: any,
+) {
 
   if (panel === "deployPanel") {
     if (deployPanel) {
@@ -285,14 +302,34 @@ async function openPanel(panel: string | undefined, title: string, filePath: str
         'ResultView',
         `${title}`,
         vscode.ViewColumn.Two,
-        { enableScripts: true }
+        {
+          enableScripts: true,
+          retainContextWhenHidden: true
+        }
       );
+
+      const abis = value.abis;
+      const bytecodes = value.bytecodes;
+
+      console.log("deployPanel이 받은 abis --- ", abis);
+      console.log("deployPanel이 받은 bytecodes --- ", bytecodes);
 
       try {
         const htmlFilePath = vscode.Uri.file(path.join(__dirname, '../..', filePath));
         console.log("htmlFilePath --- ", htmlFilePath);
         const htmlContent = await fs.promises.readFile(htmlFilePath.fsPath);
         deployPanel.webview.html = htmlContent.toString();
+
+        deployPanel.webview.postMessage({
+          type: "compileResult",
+          value: { abis: abis, bytecodes: bytecodes },
+        });
+
+        deployPanel.webview.postMessage({
+          type: "deployResult",
+          value: { abis: abis, bytecodes: bytecodes },
+        });
+
       } catch (error) {
         console.error('Error loading Webview Panel: ', error);
       }
@@ -308,7 +345,10 @@ async function openPanel(panel: string | undefined, title: string, filePath: str
         'ResultView',
         `${title}`,
         vscode.ViewColumn.Two,
-        { enableScripts: true }
+        {
+          enableScripts: true,
+          retainContextWhenHidden: true
+        }
       );
 
       try {

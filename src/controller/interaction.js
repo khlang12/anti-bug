@@ -158,12 +158,10 @@
 
       case "compileJson": {
         console.log("compileJson 실행중...");
-        const contractData = data.value;
-        // const contractList
-        
+        const { contractData, contractBytecode } = data.value;        
         console.log("contract Data 받은 거 --- ", contractData);
+        console.log("bytecodes 받은 거 --- ", contractBytecode);
 
-        // compileJson을 두번 받아도 webview는 한 번만 열려서 contractData 통째로 띄워야해
         // contract 별로 abi 띄우지 않아도 됨
         // contract 달라도 bytecodes는 똑같으니까 얘도 한번에 webview 띄우면 됨
 
@@ -171,9 +169,12 @@
           type: "webview",
           value: {
             panel: "deployPanel",
-            title: "Deploy Result",
-            filePath: "src/pages/deploy_result.ejs"
+            title: "Compile Result",
+            filePath: "src/pages/deploy_result.ejs",
+            abis: contractData,
+            bytecodes: contractBytecode,
           },
+
         });
 
         break;

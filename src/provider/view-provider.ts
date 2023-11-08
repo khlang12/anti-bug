@@ -160,6 +160,7 @@ export class ViewProvider implements vscode.WebviewViewProvider {
       }
     );
   }
+  
   private getNonce() {
     let text = "";
     const possible =

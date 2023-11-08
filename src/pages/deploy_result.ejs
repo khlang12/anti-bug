@@ -138,17 +138,48 @@
             });
 
             // abi function name 가져와서 화면에 출력
-            // const test = window.location.href;
-            // const testtest = document.getElementById('function-test');
-            // testtest.textContent = test.toString();
+            window.addEventListener("message", event => {
+                const message = event.data.type;
+                console.log("deploy_result.ejs에서 받은 이벤트 message --- ", message);
 
-            window.addEventListener('message', event => {
-                const message = event.data;
-                if (message.command === 'sendAbiNames') {
-                    const abiNames = message.abiNames;
+                if (message === "compileResult") {
 
-                    const functionNames = document.getElementById('function-names');
-                    functionNames.textContent = abiNames;
+                    console.log("deploy_result.ejs에서 tsresult 이벤트 실행 중...");
+
+                    const { abis, bytecodes } = event.data.value;
+
+                    console.log("deploy_result.ejs에서 출력하려고 받은 abis --- ", abis);
+                    console.log("deploy_result.ejs에서 출력하려고 받은 bytecodes --- ", bytecodes);
+
+                    // test하려고 위에 뽑은 거 -> 이걸로 복붙 아이콘 만들면 될듯
+                    const test = document.getElementById('test-abis');
+                    test.textContent = JSON.stringify(abis, null, 2);
+                    const testtest = document.getElementById('test-bytecodes');
+                    testtest.textContent = bytecodes.toString();
+
+                    // toggle 안에 넣어야 해
+                } else if (message === "deployResult") {
+                    console.log("deploy_result.ejs에서 deployResult 이벤트 실행 중...");
+
+                    // 이벤트에서 전달된 abiNames를 사용하여 동적으로 버튼 생성
+                    const { abiNames } = event.data.value;
+
+                    // 버튼을 추가할 컨테이너 요소 선택
+                    const functionButtonContainer = document.getElementById("function-button");
+
+                    // abiNames를 반복하며 버튼을 생성
+                    abiNames.forEach((name) => {
+                        const button = document.createElement("button");
+                        button.textContent = name;
+                        button.id = `function-button-${name}`; // 각 버튼의 고유한 ID
+                        button.addEventListener("click", () => {
+                            // 버튼 클릭 시 실행할 동작 추가
+                            console.log(`버튼 ${name}이 클릭되었습니다.`);
+                            // 이 부분에 원하는 동작 추가
+                        });
+
+                        functionButtonContainer.appendChild(button);
+                    });
                 }
             })
 
@@ -164,26 +195,29 @@
         <div id="tab-1" class="tab-content current">
             <h3>Deployed Contract</h3>
 
-            <p>function-test: </p>
-            <p id="function-test"></p>
-            <p>json content: </p>
-            <p id="json-content"></p>
+            <p>test-abis: </p>
+            <p id="test-abis"></p>
+            <p>test-bytecodes: </p>
+            <p id="test-bytecodes"></p>
+
+            <!-- function button을 생성할 부분 -->
+            <div class="card-balance__funciton" id="function-button">
+                <!-- 여기에 동적으로 생성된 버튼이 추가될 것입니다 -->
+            </div>
 
             <div class="card">
                 <button class="card-button" id="card-button" onclick="cardAction()">▼ EtherStore at ${address}</button>
                 <div class="card-content" id="card-content">
+
                     <div class="card-balance">
                         <h4>Balance : <%= value %>
                                 <%= ETH %>
                         </h4>
 
-                        <!-- button이 function 개수만큼 생겨야 하는 부분 -->
                         <div class="card-balance__funciton" id="function-button">
-                            <!-- <button id="function-names">${function} 동적생성</button> -->
                             <p>function-names: </p>
                             <p id="function-names"></p>
-                            <p>이건 어떠냐 <%= abiNames.join(', ') %></p>
-                            <!-- <textarea placeholder="동적생성"></textarea> -->
+                            <p><%= abiNames.join(', ') %></p>
                         </div>
 
                     </div>
