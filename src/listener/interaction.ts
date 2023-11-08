@@ -12,6 +12,7 @@ import { bigIntToHex, bytesToHex, hexToBytes } from "@ethereumjs/util";
 import { privateKeyToAddress } from "../util";
 import { exec } from "child_process";
 import { DEFAULT_ACCOUNTS } from "../util/config";
+import { off } from "process";
 
 export default async function interactionListener(
   this: any,
@@ -140,17 +141,27 @@ export default async function interactionListener(
             .concat(".json");
           const jsonFilePath = path.join(directoryPath, jsonFileName);
           const jsonFile = require(jsonFilePath);
-          const { abis, bytecodes, contract } = jsonFile;
-          const newABIs = makeABIEnocde(abis);
+          
+          const contractData: Record<string, { abis: any[], bytecodes: string, contract: any }> = {};
+          for (const contractName in jsonFile) {
+            if (jsonFile.hasOwnProperty(contractName)) {
+              const contractInfo = jsonFile[contractName];
+              const { abis, bytecodes } = contractInfo;
+              const contract = contractName;
+              contractData[contractName] = { abis, bytecodes, contract };
+              const newABIs = makeABIEncode(contractData[contractName].abis);
 
-          this.view.webview.postMessage({
-            type: "compiled",
-            value: {
-              abis: newABIs,
-              bytecodes,
-              contract,
-            },
-          });
+              this.view.webview.postMessage({
+                type: "compiled",
+                value: {
+                  abis: newABIs,
+                  bytecodes,
+                  contract,
+                },
+              });
+              
+            }
+          }
         });
       } catch (e) {
         console.log(e);
@@ -159,7 +170,7 @@ export default async function interactionListener(
   }
 }
 
-function makeABIEnocde(abis: any) {
+function makeABIEncode(abis: any) {
   const ABI = abis.map((data: any) => {
     const { name, inputs, type } = data;
     if (type !== "function") { return data; }
@@ -170,7 +181,6 @@ function makeABIEnocde(abis: any) {
       ...data,
       signature,
     };
-
     return newABI;
   });
   return ABI;

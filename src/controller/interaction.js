@@ -140,8 +140,6 @@
         const { abis, bytecodes, contract } = data.value;
         compiledByteCode = bytecodes;
 
-        console.log(abis);
-
         const onlyFunctionAbis = abis.filter(({ type }) => type === "function");
         const contractElement = document.createElement("div");
         contractElement.classList.add("contract");
@@ -155,6 +153,7 @@
         contractTitleElement.classList.add("contract__title");
         contractTitleElement.appendChild(contractNameElement);
         contractNameElement.innerHTML = contract;
+        contractTitleElement.appendChild(contractNameElement);
 
         contractElement.appendChild(contractTitleElement);
         contractTitleElement.appendChild(contractChevronDownButtonElement);
