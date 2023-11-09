@@ -53,13 +53,9 @@ export default async function interactionListener(
     }
 
     case "webview": {
-      console.log("webview 실행중...");
-      const { panel, title, filePath, abis, bytecodes } = event.value;
-      openPanel(panel, title, filePath, { abis, bytecodes });
-      // this.view.webview.postMessage({
-      //   type: "ts2result",
-      //   value: "12234",
-      // });
+      console.log("js -> interaction.ts - webview 실행중...");
+      const { panel, title, filePath, abis, bytecodes, contract } = event.value;
+      openPanel(panel, title, filePath, { abis, bytecodes, contract });
       break;
     }
 
@@ -74,14 +70,14 @@ export default async function interactionListener(
         to,
       } = event.value;
 
-      console.log("send 실행중...");
-      console.log("data --- ", data);
-      console.log("callData --- ", callData);
-      console.log("maxFeePerGas --- ", maxFeePerGas);
-      console.log("gasLimit --- ", gasLimit);
-      console.log("fromPrivateKey --- ", fromPrivateKey);
-      console.log("value --- ", value);
-      console.log("to --- ", to);
+      console.log("js -> interaction.ts - send 실행중…");
+      console.log("interaction.ts - send - data --- ", data);
+      console.log("interaction.ts - send - callData --- ", callData);
+      console.log("interaction.ts - send - maxFeePerGas --- ", maxFeePerGas);
+      console.log("interaction.ts - send - gasLimit --- ", gasLimit);
+      console.log("interaction.ts - send - fromPrivateKey --- ", fromPrivateKey);
+      console.log("interaction.ts - send - value --- ", value);
+      console.log("interaction.ts - send - to --- ", to);
 
       const latestBlock = antibugNode.getLatestBlock();
       const estimatedGasLimit = antibugNode.getEstimatedGasLimit(latestBlock);
@@ -148,7 +144,7 @@ export default async function interactionListener(
     }
 
     case "compile": {
-      console.log("compile 실행중...");
+      console.log("js -> interaction.ts - compile 실행중...");
       const { solFile } = event.value;
       try {
         exec(`antibug deploy ${solFile}`, (error, stdout, stderr) => {
@@ -168,7 +164,7 @@ export default async function interactionListener(
           const jsonFilePath = path.join(directoryPath, jsonFileName);
           const jsonFile = require(jsonFilePath);
 
-          console.log("jsonFile compile --- ", jsonFile);
+          console.log("interaction.ts - compile - jsonFile --- ", jsonFile);
 
           const contractData: Record<string, { abis: any[], bytecodes: string, contract: any }> = {};
           let contractBytecode;
@@ -179,13 +175,10 @@ export default async function interactionListener(
               const contract = contractName;
               contractData[contractName] = { abis, bytecodes, contract };
               contractBytecode = contractData[contractName].bytecodes;
-
-              console.log("contractData compile --- ", contractData);
-              console.log("contractBytecode compile --- ", contractBytecode);
             }
           }
-          console.log("contractData 보낸 거 --- ", contractData);
-          console.log("contractBytecode 보낸 거 --- ", contractBytecode);
+          console.log("interaction.ts - compile - contractData --- ", contractData);
+          console.log("interaction.ts - compile - contractBytecode --- ", contractBytecode);
 
           this.view.webview.postMessage({
             type: "compileJson",
@@ -202,7 +195,7 @@ export default async function interactionListener(
     }
 
     case "deploy": {
-      console.log("deploy 실행중...");
+      console.log("js -> interaction.ts - deploy 실행중...");
       const { solFile } = event.value;
       try {
         exec(`antibug deploy ${solFile}`, (error, stdout, stderr) => {
@@ -224,38 +217,49 @@ export default async function interactionListener(
 
           const contractData: Record<string, { abis: any[], bytecodes: string, contract: any }> = {};
           let contractBytecode;
+          let contractList = [];
           for (const contractName in jsonFile) {
             if (jsonFile.hasOwnProperty(contractName)) {
               const contractInfo = jsonFile[contractName];
               const { abis, bytecodes } = contractInfo;
               const contract = contractName;
               contractData[contractName] = { abis, bytecodes, contract };
-              contractBytecode = contractData[contractName].bytecodes;
 
               const newABIs = makeABIEncode(contractData[contractName].abis);
-              
-              console.log("contractData deploy --- ", contractData);
-              console.log("contractBytecode deploy --- ", contractBytecode);
-            
+              contractBytecode = contractData[contractName].bytecodes;
+              contractList.push(contractName);
+
+              console.log("interaction.ts - deploy - newABIs --- ", newABIs);
+              console.log("interaction.ts - deploy - contractBytecode --- ", contractBytecode);
+
               this.view.webview.postMessage({
-                type: "compiled",
+                type: "compiled_sidebar",
                 value: {
                   abis: newABIs,
                   bytecodes: bytecodes,
                   contract: contract,
                 },
               });
-
-              this.view.webview.postMessage({
-                type: "compileJson",
-                value: {
-                  contractData,
-                  contractBytecode,
-                }
-              });
-
             }
           }
+
+          this.view.webview.postMessage({
+            type: "compiled_webview",
+            value: {
+              abis: contractData,
+              bytecodes: contractBytecode,
+              contractList: contractList,
+            }
+          });
+
+          // this.view.webview.postMessage({
+          //   type: "compileJson",
+          //   value: {
+          //     contractData,
+          //     contractBytecode,
+          //   }
+          // });
+
         });
       } catch (e) {
         console.log(e);
@@ -294,49 +298,57 @@ async function openPanel(
   value: any,
 ) {
 
-  if (panel === "deployPanel") {
+  console.log("interaction.ts -> openPanel 실행중... ", panel);
+
+  if (panel === "compilePanel" || panel === "deployPanel") {
     if (deployPanel) {
-      deployPanel.reveal(vscode.ViewColumn.Two);
-    } else {
-      deployPanel = vscode.window.createWebviewPanel(
-        'ResultView',
-        `${title}`,
-        vscode.ViewColumn.Two,
-        {
-          enableScripts: true,
-          retainContextWhenHidden: true
-        }
-      );
+      deployPanel.dispose();
+    }
 
-      const abis = value.abis;
-      const bytecodes = value.bytecodes;
+    deployPanel = vscode.window.createWebviewPanel(
+      'ResultView',
+      `${title}`,
+      vscode.ViewColumn.Two,
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true
+      }
+    );
 
-      console.log("deployPanel이 받은 abis --- ", abis);
-      console.log("deployPanel이 받은 bytecodes --- ", bytecodes);
+    const abis = value.abis;
+    const bytecodes = value.bytecodes;
+    const contract = value.contract;
 
-      try {
-        const htmlFilePath = vscode.Uri.file(path.join(__dirname, '../..', filePath));
-        console.log("htmlFilePath --- ", htmlFilePath);
-        const htmlContent = await fs.promises.readFile(htmlFilePath.fsPath);
-        deployPanel.webview.html = htmlContent.toString();
+    console.log("openPanel - abis -—- ", abis);
+    console.log("openPanel - bytecodes -—- ", bytecodes);
+    console.log("openPanel - contract -—- ", contract);
 
+    try {
+      const htmlFilePath = vscode.Uri.file(path.join(__dirname, '../..', filePath));
+      console.log("openPanel - htmlFilePath -—- ", htmlFilePath);
+      const htmlContent = await fs.promises.readFile(htmlFilePath.fsPath);
+      deployPanel.webview.html = htmlContent.toString();
+
+      if (panel === "compilePanel") {
+        console.log("openPanel - compileResult - contract -—- ", contract);
         deployPanel.webview.postMessage({
           type: "compileResult",
-          value: { abis: abis, bytecodes: bytecodes },
+          value: { abis: abis, bytecodes: bytecodes, contract: contract },
         });
-
+      } else if (panel === "deployPanel") {
+        console.log("openPanel - deployResult - contract --- ", contract);
         deployPanel.webview.postMessage({
           type: "deployResult",
-          value: { abis: abis, bytecodes: bytecodes },
+          value: { abis: abis, bytecodes: bytecodes, contract: contract },
         });
-
-      } catch (error) {
-        console.error('Error loading Webview Panel: ', error);
       }
-      deployPanel.onDidDispose(() => {
-        deployPanel = undefined;
-      });
+      
+    } catch (error) {
+      console.error('Error loading Webview Panel: ', error);
     }
+    deployPanel.onDidDispose(() => {
+      deployPanel = undefined;
+    });
   } else if (panel === "securityPanel") {
     if (securityPanel) {
       securityPanel.reveal(vscode.ViewColumn.Two);

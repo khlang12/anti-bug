@@ -157,24 +157,23 @@
       }
 
       case "compileJson": {
-        console.log("compileJson 실행중...");
-        const { contractData, contractBytecode } = data.value;        
-        console.log("contract Data 받은 거 --- ", contractData);
-        console.log("bytecodes 받은 거 --- ", contractBytecode);
-
-        // contract 별로 abi 띄우지 않아도 됨
-        // contract 달라도 bytecodes는 똑같으니까 얘도 한번에 webview 띄우면 됨
+        console.log("ts -> interaction.js - compileJson 실행중...");
+        const { contractData, contractBytecode } = data.value;
+        const abis = contractData;
+        const bytecodes = contractBytecode;
+        console.log("interaction.js - compileJson - contractData -—- ", abis);
+        console.log("interaction.js - compileJson - bytecodes --- ", bytecodes);
 
         vscode.postMessage({
           type: "webview",
           value: {
-            panel: "deployPanel",
+            panel: "compilePanel",
             title: "Compile Result",
             filePath: "src/pages/deploy_result.ejs",
-            abis: contractData,
-            bytecodes: contractBytecode,
+            abis: abis,
+            bytecodes: bytecodes,
+            contract: null,
           },
-
         });
 
         break;
@@ -182,10 +181,13 @@
 
       // view , pure 함수는 send 버튼이 아닌 call 버튼으로 호출
 
-      case "compiled": {
-        console.log("compiled 실행중...");
+      case "compiled_sidebar": {
+        console.log("ts -> interaction.js - compiled_sidebar 실행중...");
         const { abis, bytecodes, contract } = data.value;
         compiledByteCode = bytecodes;
+        console.log("interaction.js - compiled_sidebar - contractData -—- ", abis);
+        console.log("interaction.js - compiled_sidebar - bytecodes --- ", bytecodes);
+        console.log("interaction.js - compiled_sidebar - contract ---", contract);
 
         const onlyFunctionAbis = abis.filter(({ type }) => type === "function");
         const contractElement = document.createElement("div");
@@ -282,6 +284,28 @@
         contractElement.appendChild(contractActionsWrapperElement);
 
         contractInteractionElement.appendChild(contractElement);
+
+        break;
+      }
+
+      case "compiled_webview": {
+        console.log("ts -> interaction.js - compiled_webview 실행중...");
+        const { abis, bytecodes, contractList } = data.value;
+        console.log("interaction.js - compiled_webview - contractData -—- ", abis);
+        console.log("interaction.js - compiled_webview - bytecodes --- ", bytecodes);
+        console.log("interaction.js - compiled_webview - contractList --- ", contractList);
+
+        vscode.postMessage({
+          type: "webview",
+          value: {
+            panel: "deployPanel",
+            title: "Deploy Result",
+            filePath: "src/pages/deploy_result.ejs",
+            abis: abis,
+            bytecodes: bytecodes,
+            contract: contractList,
+          }
+        });
       }
     }
   });
