@@ -185,7 +185,7 @@
         console.log("ts -> interaction.js - compiled_sidebar 실행중...");
         const { abis, bytecodes, contract } = data.value;
         compiledByteCode = bytecodes;
-        console.log("interaction.js - compiled_sidebar - contractData -—- ", abis);
+        console.log("interaction.js - compiled_sidebar - abis -—- ", abis);
         console.log("interaction.js - compiled_sidebar - bytecodes --- ", bytecodes);
         console.log("interaction.js - compiled_sidebar - contract ---", contract);
 
@@ -291,7 +291,7 @@
       case "compiled_webview": {
         console.log("ts -> interaction.js - compiled_webview 실행중...");
         const { abis, bytecodes, contractList } = data.value;
-        console.log("interaction.js - compiled_webview - contractData -—- ", abis);
+        console.log("interaction.js - compiled_webview - abis -—- ", abis);
         console.log("interaction.js - compiled_webview - bytecodes --- ", bytecodes);
         console.log("interaction.js - compiled_webview - contractList --- ", contractList);
 

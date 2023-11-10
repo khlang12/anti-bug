@@ -218,6 +218,7 @@ export default async function interactionListener(
           const contractData: Record<string, { abis: any[], bytecodes: string, contract: any }> = {};
           let contractBytecode;
           let contractList = [];
+          let abiList = [];
           for (const contractName in jsonFile) {
             if (jsonFile.hasOwnProperty(contractName)) {
               const contractInfo = jsonFile[contractName];
@@ -227,8 +228,8 @@ export default async function interactionListener(
 
               const newABIs = makeABIEncode(contractData[contractName].abis);
               contractBytecode = contractData[contractName].bytecodes;
-              contractList.push(contractName);
-
+              contractList.push({ contractName, newABIs });
+              
               console.log("interaction.ts - deploy - newABIs --- ", newABIs);
               console.log("interaction.ts - deploy - contractBytecode --- ", contractBytecode);
 
@@ -239,26 +240,19 @@ export default async function interactionListener(
                   bytecodes: bytecodes,
                   contract: contract,
                 },
-              });
+              }); //여기서 아예 list로 push 해서 list 안에 list로 넣어버려
+              // 아니 그냥 compiled_sidebar랑 똑같은 값만 compiled_webview가 받으면
+              // sidebar 코드 그대로 복붙해와도 될 것 같은디 <<<<<<<<<<<< 이거야
             }
           }
 
           this.view.webview.postMessage({
-            type: "compiled_webview",
+            type: "compiled_webview", // 그래서 여기 아예 list로 해버려 // 그러면 input이나 type이나 그런 json 못 읽나? // sidebar 다시 보자
             value: {
               abis: contractData,
               bytecodes: contractBytecode,
-              contractList: contractList,
-            }
+              contractList: contractList,            }
           });
-
-          // this.view.webview.postMessage({
-          //   type: "compileJson",
-          //   value: {
-          //     contractData,
-          //     contractBytecode,
-          //   }
-          // });
 
         });
       } catch (e) {

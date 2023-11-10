@@ -49,52 +49,98 @@
             display: inherit;
         }
 
-        .card {
-            background-color: blue;
+        .contract__title {
+            display: flex;
+            justify-content: space-between;
+            column-gap: 10px;
+
+            font-size: 15px;
+            font-weight: bold;
+            border-top: 1px solid #e9950c;
+            border-bottom: 1px solid #3d3d3d;
+            padding: 10px 0px;
         }
 
-        .card h3,
-        h4 {
-            color: white;
-            margin: 10px 0 3px 0;
+        .contract__actions {
+            display: flex;
+            flex-direction: column;
+            row-gap: 10px;
+
+            padding: 10px 0px;
         }
 
-        .card-content {
-            background-color: #6d6d6d;
+        .contract__actions.hidden {
             display: none;
         }
 
-        .card-balance,
-        .card-lowLevel {
-            padding: 5px 20px 20px 20px;
-        }
-
-        .card-balance__funciton {
+        .function__action-single {
             display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .card-balance__funciton textarea {
-            width: 100%;
-            resize: none;
-        }
-
-        .card-lowLevel__calldata {
+        .function__action-multi {
             display: flex;
+            padding: 10px;
+            flex-direction: column;
+            row-gap: 8px;
         }
 
-        .card-inline {
-            border: 2px solid #ccc;
-            margin: 0 10px;
+        .function__action-multi.hidden {
+            display: none;
         }
 
-        .button-calldata {
-            margin: 2px 0;
+        .argument {
+            display: flex;
+            align-items: flex-end;
+            column-gap: 10px;
         }
 
-        .input-calldata {
-            margin: 2px 0;
+        .argument__name {
+            width: 200px;
+        }
+
+        .function__action {
+            max-width: 150px;
             width: 100%;
-            resize: none;
+
+            border-radius: 5px;
+            background-color: #e9950c;
+        }
+
+        .function__action:has(+ input) {
+            border-top-right-radius: 0px;
+            border-bottom-right-radius: 0px;
+        }
+
+        .function__action-single input {
+            position: relative;
+            top: 1px;
+            min-height: 100%;
+            border-top-left-radius: 0px;
+            border-bottom-left-radius: 0px;
+        }
+
+        .function__action:hover {
+            background-color: #d1850b;
+        }
+
+        .function__action.pure,
+        .function__action.view {
+            background-color: #2e95d3;
+        }
+
+        .function__action.pure:hover,
+        .function__action.view:hover {
+            background-color: #2887bf;
+        }
+
+        .function__action.payable {
+            background-color: #f22c3d;
+        }
+
+        .function__action.payable:hover {
+            background-color: #d22635;
         }
     </style>
 </head>
@@ -126,16 +172,50 @@
             });
 
             // toggle action 구현
-            const toggleButton = document.getElementById("card-button");
-            const toggleContent = document.getElementById("card-content");
+            // const toggleButton = document.getElementById("card-button");
+            // const toggleContent = document.getElementById("card-content");
 
-            toggleButton.addEventListener("click", function () {
-                if (toggleContent.style.display === "none" || toggleContent.style.display === "") {
-                    toggleContent.style.display = "block";
-                } else {
-                    toggleContent.style.display = "none";
-                }
-            });
+            // toggleButton.addEventListener("click", function () {
+            //     if (toggleContent.style.display === "none" || toggleContent.style.display === "") {
+            //         toggleContent.style.display = "block";
+            //     } else {
+            //         toggleContent.style.display = "none";
+            //     }
+            // });
+
+            function makeChevronDownButtonElement() {
+                const chevronDownButtonElement = document.createElement("div");
+                const chevronDownIconElement = document.createElement("i");
+                chevronDownIconElement.classList.add(
+                    "fas",
+                    "fa-chevron-down",
+                    "dropdown-action"
+                );
+                chevronDownButtonElement.style.cursor = "pointer";
+
+                chevronDownButtonElement.appendChild(chevronDownIconElement);
+                return chevronDownButtonElement;
+            }
+
+            function makeMultiArgsElements(inputs) {
+                const argsElements = inputs.map(({ name, type }) => {
+                    const argElement = document.createElement("div");
+                    argElement.classList.add("argument");
+
+                    const inputNameElement = document.createElement("div");
+                    inputNameElement.classList.add("argument__name");
+                    inputNameElement.innerHTML = `${type} ${name}`;
+
+                    const inputElement = document.createElement("input");
+
+                    argElement.appendChild(inputNameElement);
+                    argElement.appendChild(inputElement);
+
+                    return argElement;
+                });
+
+                return argsElements;
+            }
 
             // abi function name 가져와서 화면에 출력
             window.addEventListener("message", event => {
@@ -151,40 +231,126 @@
                     console.log("interaction.ts -> deploy_result.ejs - ", message, " bytecodes --- ", bytecodes);
                     console.log("interaction.ts -> deploy_result.ejs - ", message, " contract --- ", contract);
 
-                    // test하려고 위에 뽑은 거 -> 이걸로 복붙 아이콘 만들면 될듯
+                    // test하려고 위에 뽑은 거
                     const test = document.getElementById('test-abis');
                     test.textContent = JSON.stringify(abis, null, 2);
                     const testtest = document.getElementById('test-bytecodes');
                     testtest.textContent = bytecodes.toString();
 
+                    const contractInteractionElement = document.querySelector(".contract__interaction");
+
                     // toggle 안에 넣어야 해
                     if (message === "deployResult") {
 
-                        // for 
+                        const contractList = contract;
 
-                        // // 이벤트에서 전달된 abiNames를 사용하여 동적으로 버튼 생성
-                        // const { abiNames } = event.data.value;
+                        contractList.forEach(contract => {
+                            const contractName = contract.contractName;
+                            const contractAbis = contract.newABIs;
 
-                        // // 버튼을 추가할 컨테이너 요소 선택
-                        // const functionButtonContainer = document.getElementById("function-button");
+                            console.log(contractName, contractAbis);
 
-                        // // abiNames를 반복하며 버튼을 생성
-                        // abiNames.forEach((name) => {
-                        //     const button = document.createElement("button");
-                        //     button.textContent = name;
-                        //     button.id = `function-button-${name}`; // 각 버튼의 고유한 ID
-                        //     button.addEventListener("click", () => {
-                        //         // 버튼 클릭 시 실행할 동작 추가
-                        //         console.log(`버튼 ${name}이 클릭되었습니다.`);
-                        //         // 이 부분에 원하는 동작 추가
-                        //     });
+                            const onlyFunctionAbis = contractAbis.filter(({ type }) => type === "function");
+                            const contractElement = document.createElement("div");
+                            contractElement.classList.add("contract");
 
-                        //     functionButtonContainer.appendChild(button);
-                        // });
+                            const contractTitleElement = document.createElement("div");
+                            const contractNameElement = document.createElement("p");
+                            const contractChevronDownButtonElement = makeChevronDownButtonElement();
+                            const contractActionsWrapperElement = document.createElement("div");
+                            contractActionsWrapperElement.classList.add("contract__actions");
+
+                            contractTitleElement.classList.add("contract__title");
+                            contractTitleElement.appendChild(contractNameElement);
+                            contractNameElement.innerHTML = contractName;
+                            contractTitleElement.appendChild(contractNameElement);
+
+                            contractElement.appendChild(contractTitleElement);
+                            contractTitleElement.appendChild(contractChevronDownButtonElement);
+
+                            contractChevronDownButtonElement.addEventListener("click", () => {
+                                contractActionsWrapperElement.classList.toggle("hidden");
+                            });
+
+                            const functionElements = onlyFunctionAbis.map(
+                                ({ name, inputs, stateMutability, type, signature }) => {
+                                    const functionElement = document.createElement("div");
+                                    functionElement.classList.add("function");
+
+                                    const functionActionSingleElement = document.createElement("div");
+                                    functionActionSingleElement.classList.add(
+                                        "function__action-single"
+                                    );
+
+                                    const functionActionMultiElement = document.createElement("div");
+                                    functionActionMultiElement.classList.add(
+                                        "function__action-multi",
+                                        "hidden"
+                                    );
+
+                                    let argsElement = [];
+
+                                    const actionElement = document.createElement("button");
+                                    actionElement.innerHTML = name;
+                                    actionElement.classList.add(stateMutability, "function__action");
+                                    functionActionSingleElement.appendChild(actionElement);
+
+                                    if (inputs.length === 1) {
+                                        const inputElement = document.createElement("input");
+                                        inputElement.placeholder = `${inputs[0].type} ${inputs[0].name}`;
+                                        argsElement = [inputElement];
+                                        functionActionSingleElement.appendChild(inputElement);
+                                    }
+
+                                    if (inputs.length > 1) {
+                                        const chevronDownButtonElement = makeChevronDownButtonElement();
+                                        chevronDownButtonElement.addEventListener("click", () => {
+                                            functionActionMultiElement.classList.toggle("hidden");
+                                        });
+                                        functionActionSingleElement.appendChild(chevronDownButtonElement);
+
+                                        argsElement = makeMultiArgsElements(inputs);
+                                        functionActionMultiElement.replaceChildren(...argsElement);
+                                    }
+
+                                    actionElement.addEventListener("click", () => {
+                                        console.log(argsElement);
+                                        const args = argsElement.map(
+                                            (argElement) => argElement.childNodes[1].value
+                                        );
+
+                                        console.log(contractAddressText.innerHTML);
+                                        vscode.postMessage({
+                                            type: "call",
+                                            value: {
+                                                signature,
+                                                args,
+                                                name,
+                                                to: contractAddressText.innerHTML,
+                                                fromPrivateKey: addressSelect.value,
+                                                value: ethInput.value, // TODO
+                                            },
+                                        });
+                                    });
+
+                                    functionElement.replaceChildren(functionActionSingleElement);
+                                    functionElement.appendChild(functionActionMultiElement);
+
+                                    return functionElement;
+                                }
+                            );
+                            contractActionsWrapperElement.replaceChildren(...functionElements);
+
+                            contractElement.appendChild(contractTitleElement);
+                            contractElement.appendChild(contractActionsWrapperElement);
+
+                            contractInteractionElement.appendChild(contractElement);
+
+                        })
                     }
                 }
-            })
 
+            });
         });
     </script>
 
@@ -202,43 +368,13 @@
             <p>test-bytecodes: </p>
             <p id="test-bytecodes"></p>
 
-            <!-- function button을 생성할 부분 -->
-            <div class="card-balance__funciton" id="function-button">
-                <!-- 여기에 동적으로 생성된 버튼이 추가될 것입니다 -->
-            </div>
-
-            <div class="card">
-                <button class="card-button" id="card-button" onclick="cardAction()">▼ EtherStore at ${address}</button>
-                <div class="card-content" id="card-content">
-
-                    <div class="card-balance">
-                        <h4>Balance : <%= value %>
-                                <%= ETH %>
-                        </h4>
-
-                        <div class="card-balance__funciton" id="function-button">
-                            <p>function-names: </p>
-                            <p id="function-names"></p>
-                            <p>
-                                <%= abiNames.join(', ') %></p>
-                        </div>
-
-                    </div>
-                    <hr class="card-inline">
-                    <div class="card-lowLevel">
-                        <h3>Low level interactions</h3>
-                        <h4>Calldata</h4>
-                        <div class="card-lowLevel__calldata">
-                            <textarea class="input-calldata" placeholder="입력하세요"></textarea>
-                            <button class="button-calldata">Transact</button>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
+            <!-- contract interaction 동적생성 -->
+            <div class="contract__interaction"></div>
         </div>
         <div id="tab-2" class="tab-content">
-            tab content2
+
+            <!-- contract interaction 동적생성 -->
+            <div class="contract__interaction"></div>
         </div>
     </div>
 </body>
