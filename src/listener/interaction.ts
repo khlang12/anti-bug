@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as ejs from "ejs";
 import * as path from "path";
 import * as vscode from "vscode";
 import * as ethers from "ethers";
@@ -12,17 +13,20 @@ import { bigIntToHex, bytesToHex, hexToBytes } from "@ethereumjs/util";
 import { privateKeyToAddress } from "../util";
 import { exec } from "child_process";
 import { DEFAULT_ACCOUNTS } from "../util/config";
-import { off } from "process";
+import { ViewProvider, WebviewProvider } from "../provider/view-provider";
+import { Context } from "mocha";
+import deployPanelListener from "../pages/result_listener/deploy_result";
+import { deployPanel as importedDeployPanel, securityPanel as importedSecurityPanel } from "../extension";
 
-let deployPanel: vscode.WebviewPanel | undefined;
-let securityPanel: vscode.WebviewPanel | undefined;
+let deployPanel: vscode.WebviewPanel = importedDeployPanel;
+let securityPanel: vscode.WebviewPanel = importedSecurityPanel;
 
 export default async function interactionListener(
   this: any,
   antibugNode: AntibugNode,
   event: { type: string; value: any },
-  // context: vscode.ExtensionContext,
-) {
+  ) {
+  
   switch (event.type) {
     case "init": {
       const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -229,7 +233,7 @@ export default async function interactionListener(
               const newABIs = makeABIEncode(contractData[contractName].abis);
               contractBytecode = contractData[contractName].bytecodes;
               contractList.push({ contractName, newABIs });
-              
+
               console.log("interaction.ts - deploy - newABIs --- ", newABIs);
               console.log("interaction.ts - deploy - contractBytecode --- ", contractBytecode);
 
@@ -240,18 +244,17 @@ export default async function interactionListener(
                   bytecodes: bytecodes,
                   contract: contract,
                 },
-              }); //여기서 아예 list로 push 해서 list 안에 list로 넣어버려
-              // 아니 그냥 compiled_sidebar랑 똑같은 값만 compiled_webview가 받으면
-              // sidebar 코드 그대로 복붙해와도 될 것 같은디 <<<<<<<<<<<< 이거야
+              });
             }
           }
 
           this.view.webview.postMessage({
-            type: "compiled_webview", // 그래서 여기 아예 list로 해버려 // 그러면 input이나 type이나 그런 json 못 읽나? // sidebar 다시 보자
+            type: "compiled_webview",
             value: {
               abis: contractData,
               bytecodes: contractBytecode,
-              contractList: contractList,            }
+              contractList: contractList,
+            }
           });
 
         });
@@ -285,27 +288,28 @@ function encodeCallData(signature: string, name: string, args: any[]) {
   return data;
 }
 
+
+
 async function openPanel(
   panel: string | undefined,
   title: string,
   filePath: string,
   value: any,
 ) {
-
   console.log("interaction.ts -> openPanel 실행중... ", panel);
 
   if (panel === "compilePanel" || panel === "deployPanel") {
     if (deployPanel) {
-      deployPanel.dispose();
+      deployPanel.dispose(); // 종료했다가 createWebviewPanel로 다시 켜기
+      // deployPanel.reveal(vscode.ViewColumn.Two);
     }
-
     deployPanel = vscode.window.createWebviewPanel(
       'ResultView',
       `${title}`,
       vscode.ViewColumn.Two,
       {
         enableScripts: true,
-        retainContextWhenHidden: true
+        retainContextWhenHidden: true,
       }
     );
 
@@ -322,6 +326,13 @@ async function openPanel(
       console.log("openPanel - htmlFilePath -—- ", htmlFilePath);
       const htmlContent = await fs.promises.readFile(htmlFilePath.fsPath);
       deployPanel.webview.html = htmlContent.toString();
+      const scriptPath = vscode.Uri.file(path.join(__dirname, '../..', 'src/pages/result_script/deploy_result.js')).with({ scheme: 'vscode-resource' });
+      console.log("openPanel - scriptPath -—- ", scriptPath);
+
+      deployPanel.webview.options = {
+        enableScripts: true,
+        localResourceRoots: [scriptPath],
+      };
 
       if (panel === "compilePanel") {
         console.log("openPanel - compileResult - contract -—- ", contract);
@@ -336,12 +347,12 @@ async function openPanel(
           value: { abis: abis, bytecodes: bytecodes, contract: contract },
         });
       }
-      
+
     } catch (error) {
       console.error('Error loading Webview Panel: ', error);
     }
     deployPanel.onDidDispose(() => {
-      deployPanel = undefined;
+      // deployPanel = undefined;
     });
   } else if (panel === "securityPanel") {
     if (securityPanel) {
@@ -366,9 +377,8 @@ async function openPanel(
         console.error('Error loading Webview Panel: ', error);
       }
       securityPanel.onDidDispose(() => {
-        securityPanel = undefined;
+        // securityPanel = undefined;
       });
     }
   }
 }
-
