@@ -1,6 +1,6 @@
 button {
     margin: 10px 0;
-    border-radius: 5pxㅎ;
+    border-radius: 5px;
 }
 
 input, input::placeholder, select {
@@ -30,6 +30,28 @@ input, input::placeholder, select {
 
 .send-eth__copy {
     cursor: pointer;
+}
+
+.compile__interaction {
+    display: flex;
+    justify-content: right;
+}
+
+.compile__copy {
+    width: 80px;
+    padding: 10px;
+    font-size: smaller;
+    margin: 0 0 0 3px;
+    border-radius: 25px;
+    color: var(--vscode-editor-foreground);
+    background: var(--vscode-button-separator);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.compile__copy:hover {
+    background: var(--vscode-editorHoverWidget-highlightForeground);
 }
 
 .contract__title {

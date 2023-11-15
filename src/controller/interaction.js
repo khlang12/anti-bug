@@ -10,9 +10,9 @@
   const deployContractButton = document.querySelector(".contract__deploy");
   const contractAddressText = document.querySelector(".contract__address");
   const callTxButton = document.querySelector(".call-tx");
-  const contractInteractionElement = document.querySelector(
-    ".contract__interaction"
-  );
+  const contractInteractionElement = document.querySelector(".contract__interaction");
+
+  const compileInteractionElement = document.querySelector(".compile__interaction");
 
   const solFilesSelect = document.querySelector(".compile__solFiles");
   const compileButton = document.querySelector(".compile__submit");
@@ -59,22 +59,6 @@
       .trim();
     navigator.clipboard.writeText(address);
   });
-
-  // deployContractButton.addEventListener("click", () => {
-  //   if (!compiledByteCode) {
-  //     console.log("compiledByteCode is null");
-  //     return;
-  //   }
-  //   vscode.postMessage({
-  //     type: "send",
-  //     value: {
-  //       data: "0x608060405234801561001057600080fd5b50336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550610215806100606000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80638da5cb5b1461003b578063f5a1f5b414610059575b600080fd5b610043610089565b6040516100509190610154565b60405180910390f35b610073600480360381019061006e919061010d565b6100ad565b604051610080919061016f565b60405180910390f35b60008054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b6000816000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555060019050919050565b600081359050610107816101c8565b92915050565b60006020828403121561011f57600080fd5b600061012d848285016100f8565b91505092915050565b61013f8161018a565b82525050565b61014e8161019c565b82525050565b60006020820190506101696000830184610136565b92915050565b60006020820190506101846000830184610145565b92915050565b6000610195826101a8565b9050919050565b60008115159050919050565b600073ffffffffffffffffffffffffffffffffffffffff82169050919050565b6101d18161018a565b81146101dc57600080fd5b5056fea26469706673582212206dcd72df54690b8b5cdf0dab48c3f2bbef7b23ef7c01535142bfe4c32f0eacfc64736f6c63430008000033",
-  //       // data: compiledByteCode,
-  //       fromPrivateKey: addressSelect.value,
-  //       value: 0, // TODO
-  //     },
-  //   });
-  // });
 
   deployContractButton.addEventListener("click", () => {
     vscode.postMessage({
@@ -164,129 +148,150 @@
         console.log("interaction.js - compileJson - contractData -—- ", abis);
         console.log("interaction.js - compileJson - bytecodes --- ", bytecodes);
 
-        vscode.postMessage({
-          type: "webview",
-          value: {
-            panel: "compilePanel",
-            title: "Compile Result",
-            filePath: "src/pages/deploy_result.ejs",
-            abis: abis,
-            bytecodes: bytecodes,
-            contract: null,
-          },
+        let abiButton = document.getElementById("abiButton");
+        let bytecodesButton = document.getElementById("bytecodesButton");
+
+        if (!abiButton) {
+          abiButton = document.createElement("div");
+          abiButton.innerHTML = `
+            <div type="button" class="compile__copy" id="abiButton">
+            <i class="far fa-copy"></i>ABI
+            </div>`;
+          abiButton = abiButton.firstElementChild;
+        }
+        abiButton.addEventListener("click", () => {
+          copyToClipboard(JSON.stringify(abis));
+          console.log("Copy abis");
         });
+
+        if (!bytecodesButton) {
+          bytecodesButton = document.createElement("div");
+          bytecodesButton.innerHTML = `
+            <div type="button" class="compile__copy" id="bytecodesButton">
+            <i class="far fa-copy"></i>Bytecode
+            </div>`;
+          bytecodesButton = bytecodesButton.firstElementChild;
+        }
+        bytecodesButton.addEventListener("click", () => {
+          copyToClipboard(bytecodes);
+          console.log("Copy bytecodes");
+        });
+
+        compileInteractionElement.appendChild(abiButton);
+        compileInteractionElement.appendChild(bytecodesButton);
 
         break;
       }
 
       // view , pure 함수는 send 버튼이 아닌 call 버튼으로 호출
 
-      case "compiled_sidebar": {
-        console.log("ts -> interaction.js - compiled_sidebar 실행중...");
-        const { abis, bytecodes, contract } = data.value;
-        compiledByteCode = bytecodes;
-        console.log("interaction.js - compiled_sidebar - abis -—- ", abis);
-        console.log("interaction.js - compiled_sidebar - bytecodes --- ", bytecodes);
-        console.log("interaction.js - compiled_sidebar - contract ---", contract);
+      // sidebar에 deploy 결과 contract 띄우는 거 필요없음
+      // case "compiled_sidebar": {
+      //   console.log("ts -> interaction.js - compiled_sidebar 실행중...");
+      //   const { abis, bytecodes, contract } = data.value;
+      //   compiledByteCode = bytecodes;
+      //   console.log("interaction.js - compiled_sidebar - abis -—- ", abis);
+      //   console.log("interaction.js - compiled_sidebar - bytecodes --- ", bytecodes);
+      //   console.log("interaction.js - compiled_sidebar - contract ---", contract);
 
-        const onlyFunctionAbis = abis.filter(({ type }) => type === "function");
-        const contractElement = document.createElement("div");
-        contractElement.classList.add("contract");
+      //   const onlyFunctionAbis = abis.filter(({ type }) => type === "function");
+      //   const contractElement = document.createElement("div");
+      //   contractElement.classList.add("contract");
 
-        const contractTitleElement = document.createElement("div");
-        const contractNameElement = document.createElement("p");
-        const contractChevronDownButtonElement = makeChevronDownButtonElement();
-        const contractActionsWrapperElement = document.createElement("div");
-        contractActionsWrapperElement.classList.add("contract__actions");
+      //   const contractTitleElement = document.createElement("div");
+      //   const contractNameElement = document.createElement("p");
+      //   const contractChevronDownButtonElement = makeChevronDownButtonElement();
+      //   const contractActionsWrapperElement = document.createElement("div");
+      //   contractActionsWrapperElement.classList.add("contract__actions");
 
-        contractTitleElement.classList.add("contract__title");
-        contractTitleElement.appendChild(contractNameElement);
-        contractNameElement.innerHTML = contract;
-        contractTitleElement.appendChild(contractNameElement);
+      //   contractTitleElement.classList.add("contract__title");
+      //   contractTitleElement.appendChild(contractNameElement);
+      //   contractNameElement.innerHTML = contract;
+      //   contractTitleElement.appendChild(contractNameElement);
 
-        contractElement.appendChild(contractTitleElement);
-        contractTitleElement.appendChild(contractChevronDownButtonElement);
+      //   contractElement.appendChild(contractTitleElement);
+      //   contractTitleElement.appendChild(contractChevronDownButtonElement);
 
-        contractChevronDownButtonElement.addEventListener("click", () => {
-          contractActionsWrapperElement.classList.toggle("hidden");
-        });
+      //   contractChevronDownButtonElement.addEventListener("click", () => {
+      //     contractActionsWrapperElement.classList.toggle("hidden");
+      //   });
 
-        const functionElements = onlyFunctionAbis.map(
-          ({ name, inputs, stateMutability, type, signature }) => {
-            const functionElement = document.createElement("div");
-            functionElement.classList.add("function");
+      //   const functionElements = onlyFunctionAbis.map(
+      //     ({ name, inputs, stateMutability, type, signature }) => {
+      //       const functionElement = document.createElement("div");
+      //       functionElement.classList.add("function");
 
-            const functionActionSingleElement = document.createElement("div");
-            functionActionSingleElement.classList.add(
-              "function__action-single"
-            );
+      //       const functionActionSingleElement = document.createElement("div");
+      //       functionActionSingleElement.classList.add(
+      //         "function__action-single"
+      //       );
 
-            const functionActionMultiElement = document.createElement("div");
-            functionActionMultiElement.classList.add(
-              "function__action-multi",
-              "hidden"
-            );
+      //       const functionActionMultiElement = document.createElement("div");
+      //       functionActionMultiElement.classList.add(
+      //         "function__action-multi",
+      //         "hidden"
+      //       );
 
-            let argsElement = [];
+      //       let argsElement = [];
 
-            const actionElement = document.createElement("button");
-            actionElement.innerHTML = name;
-            actionElement.classList.add(stateMutability, "function__action");
-            functionActionSingleElement.appendChild(actionElement);
+      //       const actionElement = document.createElement("button");
+      //       actionElement.innerHTML = name;
+      //       actionElement.classList.add(stateMutability, "function__action");
+      //       functionActionSingleElement.appendChild(actionElement);
 
-            if (inputs.length === 1) {
-              const inputElement = document.createElement("input");
-              inputElement.placeholder = `${inputs[0].type} ${inputs[0].name}`;
-              argsElement = [inputElement];
-              functionActionSingleElement.appendChild(inputElement);
-            }
+      //       if (inputs.length === 1) {
+      //         const inputElement = document.createElement("input");
+      //         inputElement.placeholder = `${inputs[0].type} ${inputs[0].name}`;
+      //         argsElement = [inputElement];
+      //         functionActionSingleElement.appendChild(inputElement);
+      //       }
 
-            if (inputs.length > 1) {
-              const chevronDownButtonElement = makeChevronDownButtonElement();
-              chevronDownButtonElement.addEventListener("click", () => {
-                functionActionMultiElement.classList.toggle("hidden");
-              });
-              functionActionSingleElement.appendChild(chevronDownButtonElement);
+      //       if (inputs.length > 1) {
+      //         const chevronDownButtonElement = makeChevronDownButtonElement();
+      //         chevronDownButtonElement.addEventListener("click", () => {
+      //           functionActionMultiElement.classList.toggle("hidden");
+      //         });
+      //         functionActionSingleElement.appendChild(chevronDownButtonElement);
 
-              argsElement = makeMultiArgsElements(inputs);
-              functionActionMultiElement.replaceChildren(...argsElement);
-            }
+      //         argsElement = makeMultiArgsElements(inputs);
+      //         functionActionMultiElement.replaceChildren(...argsElement);
+      //       }
 
-            actionElement.addEventListener("click", () => {
-              console.log(argsElement);
-              const args = argsElement.map(
-                (argElement) => argElement.childNodes[1].value
-              );
+      //       actionElement.addEventListener("click", () => {
+      //         console.log(argsElement);
+      //         const args = argsElement.map(
+      //           (argElement) => argElement.childNodes[1].value
+      //         );
 
-              console.log(contractAddressText.innerHTML);
-              vscode.postMessage({
-                type: "call",
-                value: {
-                  signature,
-                  args,
-                  name,
-                  to: contractAddressText.innerHTML,
-                  fromPrivateKey: addressSelect.value,
-                  value: ethInput.value, // TODO
-                },
-              });
-            });
+      //         console.log(contractAddressText.innerHTML);
+      //         vscode.postMessage({
+      //           type: "call",
+      //           value: {
+      //             signature,
+      //             args,
+      //             name,
+      //             to: contractAddressText.innerHTML,
+      //             fromPrivateKey: addressSelect.value,
+      //             value: ethInput.value, // TODO
+      //           },
+      //         });
+      //       });
 
-            functionElement.replaceChildren(functionActionSingleElement);
-            functionElement.appendChild(functionActionMultiElement);
+      //       functionElement.replaceChildren(functionActionSingleElement);
+      //       functionElement.appendChild(functionActionMultiElement);
 
-            return functionElement;
-          }
-        );
-        contractActionsWrapperElement.replaceChildren(...functionElements);
+      //       return functionElement;
+      //     }
+      //   );
+      //   contractActionsWrapperElement.replaceChildren(...functionElements);
 
-        contractElement.appendChild(contractTitleElement);
-        contractElement.appendChild(contractActionsWrapperElement);
+      //   contractElement.appendChild(contractTitleElement);
+      //   contractElement.appendChild(contractActionsWrapperElement);
 
-        contractInteractionElement.appendChild(contractElement);
+      //   contractInteractionElement.appendChild(contractElement);
 
-        break;
-      }
+      //   break;
+      // }
 
       case "compiled_webview": {
         console.log("ts -> interaction.js - compiled_webview 실행중...");
@@ -344,3 +349,12 @@
     return chevronDownButtonElement;
   }
 })();
+
+function copyToClipboard(value) {
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+}

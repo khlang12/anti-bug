@@ -1,91 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- <script src="src/controller/security.js"></script> -->
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src <%= cspSource %> 'unsafe-inline'; script-src 'nonce-<%= nonce %>';" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="<%= styleUri %>" rel="stylesheet" />
+    
     <title>Security Analysis</title>
-    <style>
-        body {
-            margin-top: 10px;
-            line-height: 1.6;
-        }
-
-        .container {
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        ul.tabs {
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        ul.tabs li {
-            width: auto;
-            background: none;
-            color: #ffffff;
-            display: inline-block;
-            padding: 10px 15px;
-            cursor: pointer;
-        }
-
-        ul.tabs li.current {
-            background: #82C0DA;
-            color: #222;
-
-        }
-
-        .tab-content {
-            display: none;
-            background: #82C026;
-            color: #000000;
-            padding: 15px;
-        }
-
-        .tab-content.current {
-            display: inherit;
-        }
-
-        .toggle-analysis__result {
-            margin: 10px 0;
-        }
-
-        .toggle-analysis__button {
-            margin: 5px 0;
-            background-color: purple;
-            font-size: medium;
-        }
-
-        #toggle-contract__content,
-        #toggle-callGraph__content,
-        #toggle-abi__content,
-        #toggle-evmBytecode__content,
-        #toggle-storage__content,
-        #toggle-blacklist__content {
-            display: none;
-        }
-
-        table {
-            border-collapse: collapse;
-            background-color: lightcoral;
-        }
-
-        th,
-        td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: center;
-        }
-
-        div.scrollable-table {
-            width: 100%;
-            overflow-x: auto;
-        }
-    </style>
 </head>
 
 <body>
@@ -95,60 +18,6 @@
             <li class="tab-link" data-tab="tab-2">Contract Analysis</li>
             <li class="tab-link" data-tab="tab-3">Comparable Function Code</li>
         </ul>
-
-        <script>
-            // tab action 구현
-            document.addEventListener("DOMContentLoaded", function () {
-                const tabLinks = document.querySelectorAll(".tab-link");
-                const tabContents = document.querySelectorAll(".tab-content");
-
-                tabLinks.forEach(function (link) {
-                    link.addEventListener("click", function () {
-                        const tabId = this.getAttribute("data-tab");
-
-                        tabLinks.forEach(function (tabLink) {
-                            tabLink.classList.remove("current");
-                        });
-                        tabContents.forEach(function (tabContent) {
-                            tabContent.classList.remove("current");
-                        });
-
-                        this.classList.add("current");
-                        document.getElementById(tabId).classList.add("current");
-                    });
-                });
-            });
-
-            // toggle action 구현
-            document.addEventListener("DOMContentLoaded", function () {
-                function toggleElement(element) {
-                    if (element.style.display === "none" || element.style.display === "") {
-                        element.style.display = "block";
-                    } else {
-                        element.style.display = "none";
-                    }
-                }
-
-                const buttons = [
-                    "toggle-contract__button",
-                    "toggle-callGraph__button",
-                    "toggle-abi__button",
-                    "toggle-evmBytecode__button",
-                    "toggle-storage__button",
-                    "toggle-blacklist__button",
-                ];
-
-                buttons.forEach(function (buttonId) {
-                    const button = document.getElementById(buttonId);
-                    const contentId = buttonId.replace("button", "content");
-                    const content = document.getElementById(contentId);
-
-                    button.addEventListener("click", function () {
-                        toggleElement(content);
-                    });
-                });
-            });
-        </script>
 
         <div id="tab-1" class="tab-content current">
             <h3>Vulnerability Detect Result</h3>
@@ -283,6 +152,7 @@
             </div>
         </div>
     </div>
+    <script nonce="<%= nonce %>" src="<%= scriptUri %>"></script>
 </body>
 
 </html>

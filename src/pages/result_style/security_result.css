@@ -1,0 +1,78 @@
+        body {
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        ul.tabs {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        ul.tabs li {
+            width: auto;
+            background: none;
+            color: #ffffff;
+            display: inline-block;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        ul.tabs li.current {
+            background: #82C0DA;
+            color: #222;
+
+        }
+
+        .tab-content {
+            display: none;
+            background: #82C026;
+            color: #000000;
+            padding: 15px;
+        }
+
+        .tab-content.current {
+            display: inherit;
+        }
+
+        .toggle-analysis__result {
+            margin: 10px 0;
+        }
+
+        .toggle-analysis__button {
+            margin: 5px 0;
+            background-color: purple;
+            font-size: medium;
+        }
+
+        #toggle-contract__content,
+        #toggle-callGraph__content,
+        #toggle-abi__content,
+        #toggle-evmBytecode__content,
+        #toggle-storage__content,
+        #toggle-blacklist__content {
+            display: none;
+        }
+
+        table {
+            border-collapse: collapse;
+            background-color: lightcoral;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        div.scrollable-table {
+            width: 100%;
+            overflow-x: auto;
+        }

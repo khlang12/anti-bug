@@ -1,8 +1,7 @@
 document.addEventListener("DOMContentLoaded", async function () {
     const vscode = acquireVsCodeApi();
-    console.log(vscode);
 
-    // tab action 구현
+    // tab action
     const tabLinks = document.querySelectorAll(".tab-link");
     const tabContents = document.querySelectorAll(".tab-content");
 
@@ -22,18 +21,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     });
 
-    // toggle action 구현
-    // const toggleButton = document.getElementById("card-button");
-    // const toggleContent = document.getElementById("card-content");
-
-    // toggleButton.addEventListener("click", function () {
-    //     if (toggleContent.style.display === "none" || toggleContent.style.display === "") {
-    //         toggleContent.style.display = "block";
-    //     } else {
-    //         toggleContent.style.display = "none";
-    //     }
-    // });
-
+    // toggle action
     function makeChevronDownButtonElement() {
         const chevronDownButtonElement = document.createElement("div");
         const chevronDownIconElement = document.createElement("i");
@@ -46,6 +34,21 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         chevronDownButtonElement.appendChild(chevronDownIconElement);
         return chevronDownButtonElement;
+    }
+
+    // delete action
+    function makeDeleteButtonElement() {
+        const deleteButtonElement = document.createElement("div");
+        const deleteIconElement = document.createElement("i");
+        deleteIconElement.classList.add(
+            "fas",
+            "fa-times",
+            "delete-action"
+        );
+        deleteButtonElement.style.cursor = "pointer";
+
+        deleteButtonElement.appendChild(deleteIconElement);
+        return deleteButtonElement;
     }
 
     function makeMultiArgsElements(inputs) {
@@ -68,12 +71,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         return argsElements;
     }
 
-    // abi function name 가져와서 화면에 출력
+    // contract interaction
     window.addEventListener("message", event => {
         const message = event.data.type;
         console.log("interaction.ts -> deploy_result.ejs -  type —-- ", message);
 
-        if (message === "compileResult" || message === "deployResult") {
+        if (message === "deployResult") {
 
             console.log("deploy_result.ejs - ", message, " 실행중…");
             const { abis, bytecodes, contract } = event.data.value;
@@ -83,19 +86,17 @@ document.addEventListener("DOMContentLoaded", async function () {
             console.log("interaction.ts -> deploy_result.ejs - ", message, " contract --- ", contract);
 
             // test하려고 위에 뽑은 거
-            const test = document.getElementById('test-abis');
-            test.textContent = JSON.stringify(abis, null, 2);
-            const testtest = document.getElementById('test-bytecodes');
-            testtest.textContent = bytecodes.toString();
+            // const test = document.getElementById('test-abis');
+            // test.textContent = JSON.stringify(abis, null, 2);
+            // const testtest = document.getElementById('test-bytecodes');
+            // testtest.textContent = bytecodes.toString();
 
-            const contractInteractionElement = document.querySelector(".contract__interaction");
+            const contractInteractionElements = document.querySelectorAll(".contract__interaction");
 
-            // toggle 안에 넣어야 해
-            if (message === "deployResult") {
-
+            contractInteractionElements.forEach((contractInteractionElement) => {
                 const contractList = contract;
 
-                contractList.forEach(contract => {
+                contractList.forEach((contract) => {
                     const contractName = contract.contractName;
                     const contractAbis = contract.newABIs;
 
@@ -106,21 +107,29 @@ document.addEventListener("DOMContentLoaded", async function () {
                     contractElement.classList.add("contract");
 
                     const contractTitleElement = document.createElement("div");
+                    contractTitleElement.classList.add("contract__title");
                     const contractNameElement = document.createElement("p");
+                    contractNameElement.classList.add("contract__name");
                     const contractChevronDownButtonElement = makeChevronDownButtonElement();
+                    contractChevronDownButtonElement.classList.add("contract__icon");
+                    const deleteButtonElement = makeDeleteButtonElement();
+                    deleteButtonElement.classList.add("contract__icon");
                     const contractActionsWrapperElement = document.createElement("div");
                     contractActionsWrapperElement.classList.add("contract__actions");
 
-                    contractTitleElement.classList.add("contract__title");
+                    contractElement.appendChild(contractTitleElement);
+                    contractTitleElement.appendChild(deleteButtonElement);
                     contractTitleElement.appendChild(contractNameElement);
                     contractNameElement.innerHTML = contractName;
                     contractTitleElement.appendChild(contractNameElement);
-
-                    contractElement.appendChild(contractTitleElement);
                     contractTitleElement.appendChild(contractChevronDownButtonElement);
 
                     contractChevronDownButtonElement.addEventListener("click", () => {
                         contractActionsWrapperElement.classList.toggle("hidden");
+                    });
+
+                    deleteButtonElement.addEventListener("click", () => {
+                        contractElement.classList.toggle("hidden");
                     });
 
                     const functionElements = onlyFunctionAbis.map(
@@ -129,9 +138,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                             functionElement.classList.add("function");
 
                             const functionActionSingleElement = document.createElement("div");
-                            functionActionSingleElement.classList.add(
-                                "function__action-single"
-                            );
+                            functionActionSingleElement.classList.add("function__action-single");
 
                             const functionActionMultiElement = document.createElement("div");
                             functionActionMultiElement.classList.add(
@@ -155,6 +162,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                             if (inputs.length > 1) {
                                 const chevronDownButtonElement = makeChevronDownButtonElement();
+                                chevronDownButtonElement.classList.add("contract__icon");
                                 chevronDownButtonElement.addEventListener("click", () => {
                                     functionActionMultiElement.classList.toggle("hidden");
                                 });
@@ -196,21 +204,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                     contractElement.appendChild(contractActionsWrapperElement);
 
                     contractInteractionElement.appendChild(contractElement);
-
                 });
-            }
+            });
+
+
         }
 
     });
 });
-
-// 동적으로 script 실행할 때 worker fetch 쓰라는데 api 다시 봐봐..
-// const workerSource = '/Users/kahyun/anti-bug/src/pages/result_script/deploy_result.js';
-// console.log("workerSource --- ", workerSource);
-
-// fetch(workerSource)
-//     .then(result => result.blob())
-//     .then(blob => {
-//         const blobUrl = URL.createObjectURL(blob);
-//         new Worker(blobUrl);
-//     });

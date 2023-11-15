@@ -1,6 +1,7 @@
 import path = require('path');
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import { ViewProvider, WebviewProvider } from "../provider/view-provider";
 
 const markdownIt = require('markdown-it');
 const md = markdownIt();
@@ -10,38 +11,43 @@ let auditreportPanel: vscode.WebviewPanel | undefined;
 let htmlFilePath: vscode.Uri | undefined;
 let htmlContent: string | undefined;
 
-
 export default async function securityListener(
     context: vscode.ExtensionContext,
     data: { type: string }
 ) {
     vscode.window.showInformationMessage('securityListener 실행됨!');
 
+
+    const securityProvider = new WebviewProvider({
+        extensionUri: vscode.Uri.file(path.join(__dirname, '../..')),
+        viewType: 'antibug.webviewPanel.security',
+        cssFile: "security_result.css",
+        scriptFile: "security_result.js",
+        htmlFile: "security_result.ejs",
+    });
+
     switch (data.type) {
         case "analysis": {
-            vscode.window.showInformationMessage('securityListener의 analysis 실행됨!');
-            if (securityPanel) {
-                securityPanel.reveal(vscode.ViewColumn.Two);
-            } else {
+            if (!securityPanel) {
                 securityPanel = vscode.window.createWebviewPanel(
                     'securityResultView',
-                    'Security Result View',
+                    'Security Result',
                     vscode.ViewColumn.Two,
-                    { enableScripts: true }
+                    {
+                        enableScripts: true,
+                        retainContextWhenHidden: true,
+                    }
                 );
 
-                try {
-                    htmlFilePath = vscode.Uri.file(path.join(context.extensionPath, 'src/pages/security_result.ejs'));
-                    htmlContent = await fs.promises.readFile(htmlFilePath.fsPath, 'utf-8');
-                    securityPanel.webview.html = htmlContent;
-                } catch (error) {
-                    console.error('Error loading HTML content: ', error);
-                }
-
-                securityPanel.onDidDispose(() => {
-                    securityPanel = undefined;
-                });
+                securityPanel.webview.html = securityProvider.getHtmlForWebview(securityPanel.webview);
             }
+            vscode.commands.executeCommand('setContext', 'webviewVisible', true);
+
+            securityPanel.onDidDispose(() => {
+                securityPanel = undefined;
+                vscode.commands.executeCommand('setContext', 'webviewVisible', false)
+            });
+
 
             securityPanel.webview.onDidReceiveMessage((message) => {
                 if (message.command === 'analysisClicked') {

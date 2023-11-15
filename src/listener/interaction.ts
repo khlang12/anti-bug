@@ -15,18 +15,16 @@ import { exec } from "child_process";
 import { DEFAULT_ACCOUNTS } from "../util/config";
 import { ViewProvider, WebviewProvider } from "../provider/view-provider";
 import { Context } from "mocha";
-import deployPanelListener from "../pages/result_listener/deploy_result";
-import { deployPanel as importedDeployPanel, securityPanel as importedSecurityPanel } from "../extension";
+// import { deployPanel as importedDeployPanel, securityPanel as importedSecurityPanel } from "../extension";
 
-let deployPanel: vscode.WebviewPanel = importedDeployPanel;
-let securityPanel: vscode.WebviewPanel = importedSecurityPanel;
+let deployPanel: vscode.WebviewPanel | undefined ;
 
 export default async function interactionListener(
   this: any,
   antibugNode: AntibugNode,
   event: { type: string; value: any },
-  ) {
-  
+) {
+
   switch (event.type) {
     case "init": {
       const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -238,11 +236,10 @@ export default async function interactionListener(
               console.log("interaction.ts - deploy - contractBytecode --- ", contractBytecode);
 
               this.view.webview.postMessage({
-                type: "compiled_sidebar",
+                type: "compileJson",
                 value: {
-                  abis: newABIs,
-                  bytecodes: bytecodes,
-                  contract: contract,
+                  contractData,
+                  contractBytecode,
                 },
               });
             }
@@ -289,6 +286,14 @@ function encodeCallData(signature: string, name: string, args: any[]) {
 }
 
 
+// openPanel에 적용할 WebviewProvider
+const deployProvider = new WebviewProvider({
+  extensionUri: vscode.Uri.file(path.join(__dirname, '../..')),
+  viewType: 'antibug.webviewPanel.interaction',
+  cssFile: "deploy_result.css",
+  scriptFile: "deploy_result.js",
+  htmlFile: "deploy_result.ejs",
+});
 
 async function openPanel(
   panel: string | undefined,
@@ -298,20 +303,22 @@ async function openPanel(
 ) {
   console.log("interaction.ts -> openPanel 실행중... ", panel);
 
-  if (panel === "compilePanel" || panel === "deployPanel") {
-    if (deployPanel) {
-      deployPanel.dispose(); // 종료했다가 createWebviewPanel로 다시 켜기
-      // deployPanel.reveal(vscode.ViewColumn.Two);
+  if (panel === "deployPanel") {
+    if (!deployPanel) {
+      deployPanel = vscode.window.createWebviewPanel(
+        'deployResultView',
+        "Deploy Result",
+        vscode.ViewColumn.Two,
+        {
+          enableScripts: true,
+          retainContextWhenHidden: true,
+        }
+      );
+
+      deployPanel.webview.html = deployProvider.getHtmlForWebview(deployPanel.webview);
     }
-    deployPanel = vscode.window.createWebviewPanel(
-      'ResultView',
-      `${title}`,
-      vscode.ViewColumn.Two,
-      {
-        enableScripts: true,
-        retainContextWhenHidden: true,
-      }
-    );
+
+    vscode.commands.executeCommand('setContext', 'webviewVisible', true);
 
     const abis = value.abis;
     const bytecodes = value.bytecodes;
@@ -320,65 +327,18 @@ async function openPanel(
     console.log("openPanel - abis -—- ", abis);
     console.log("openPanel - bytecodes -—- ", bytecodes);
     console.log("openPanel - contract -—- ", contract);
+    console.log("openPanel - deployResult - contract --- ", contract);
 
-    try {
-      const htmlFilePath = vscode.Uri.file(path.join(__dirname, '../..', filePath));
-      console.log("openPanel - htmlFilePath -—- ", htmlFilePath);
-      const htmlContent = await fs.promises.readFile(htmlFilePath.fsPath);
-      deployPanel.webview.html = htmlContent.toString();
-      const scriptPath = vscode.Uri.file(path.join(__dirname, '../..', 'src/pages/result_script/deploy_result.js')).with({ scheme: 'vscode-resource' });
-      console.log("openPanel - scriptPath -—- ", scriptPath);
-
-      deployPanel.webview.options = {
-        enableScripts: true,
-        localResourceRoots: [scriptPath],
-      };
-
-      if (panel === "compilePanel") {
-        console.log("openPanel - compileResult - contract -—- ", contract);
-        deployPanel.webview.postMessage({
-          type: "compileResult",
-          value: { abis: abis, bytecodes: bytecodes, contract: contract },
-        });
-      } else if (panel === "deployPanel") {
-        console.log("openPanel - deployResult - contract --- ", contract);
-        deployPanel.webview.postMessage({
-          type: "deployResult",
-          value: { abis: abis, bytecodes: bytecodes, contract: contract },
-        });
-      }
-
-    } catch (error) {
-      console.error('Error loading Webview Panel: ', error);
-    }
-    deployPanel.onDidDispose(() => {
-      // deployPanel = undefined;
+    deployPanel.webview.postMessage({
+      type: "deployResult",
+      value: { abis: abis, bytecodes: bytecodes, contract: contract },
     });
-  } else if (panel === "securityPanel") {
-    if (securityPanel) {
-      securityPanel.reveal(vscode.ViewColumn.Two);
-    } else {
-      securityPanel = vscode.window.createWebviewPanel(
-        'ResultView',
-        `${title}`,
-        vscode.ViewColumn.Two,
-        {
-          enableScripts: true,
-          retainContextWhenHidden: true
-        }
-      );
 
-      try {
-        const htmlFilePath = vscode.Uri.file(path.join(__dirname, '../..', filePath));
-        console.log("htmlFilePath --- ", htmlFilePath);
-        const htmlContent = await fs.promises.readFile(htmlFilePath.fsPath);
-        securityPanel.webview.html = htmlContent.toString();
-      } catch (error) {
-        console.error('Error loading Webview Panel: ', error);
-      }
-      securityPanel.onDidDispose(() => {
-        // securityPanel = undefined;
-      });
-    }
+    deployPanel.onDidDispose(() => {
+      deployPanel = undefined;
+      vscode.commands.executeCommand('setContext', 'webviewVisible', false);
+  });
+
+  } else if (panel === "securityPanel") {
   }
 }

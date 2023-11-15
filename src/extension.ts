@@ -1,14 +1,12 @@
 import * as vscode from "vscode";
+import * as path from "path";
+import * as fs from "fs";
 import { ViewProvider, WebviewProvider } from "./provider/view-provider";
 import AntibugNode from "./blockchain/node";
 import interactionListener from "./listener/interaction";
 import testcodeListener from "./listener/testcode";
 import securityListener from "./listener/security";
 import exp = require("constants");
-import deployPanelListener from "./pages/result_listener/deploy_result";
-
-export let deployPanel: vscode.WebviewPanel;
-export let securityPanel: vscode.WebviewPanel;
 
 export async function activate(context: vscode.ExtensionContext) {
   const antibugNode = await AntibugNode.create();
@@ -75,49 +73,26 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
 
-
-  // Deploy Result Webview
-  deployPanel = vscode.window.createWebviewPanel(
-    'deployResultView',
-    "Deploy Result",
-    {
-      preserveFocus: false,
-      viewColumn: 2,
-    },
-    {
-      enableScripts: true,
-      retainContextWhenHidden: true,
-    }
-  );
-
-  const deployProvider = new WebviewProvider({
-    extensionUri: context.extensionUri,
-    viewType: 'antibug.webviewPanel.interaction',
-    cssFile: "deploy_result.css",
-    scriptFile: "deploy_result.js",
-    htmlFile: "deploy_result.ejs",
-  });
-
-  const disposal = vscode.window.registerWebviewViewProvider(deployProvider.getViewType(), deployProvider);
-  vscode.commands.executeCommand('setContext', 'webviewVisible', true);
-  deployPanel.onDidDispose(() => vscode.commands.executeCommand('setContext', 'webviewVisible', false));
-  deployPanel.webview.onDidReceiveMessage(message => {
-    vscode.window.showInformationMessage(`Received message from webview: ${message}`);
-  });
-
-  deployPanel.webview.html = deployProvider.getHtmlForWebview(deployPanel.webview);
-
-
-  // Security Result Webview
-  securityPanel = vscode.window.createWebviewPanel(
-    'securityResultView',
-    'Security Result',
+  // Welcome Webview Panel
+  const welcomePanel = vscode.window.createWebviewPanel(
+    'welcomePage',
+    'Welcome',
     vscode.ViewColumn.Two,
     {
       enableScripts: true,
       retainContextWhenHidden: true,
     }
   );
+
+  const welcomeProvider = new WebviewProvider({
+    extensionUri: context.extensionUri,
+    viewType: 'antibug.webviewPanel.welcome',
+    cssFile: "",
+    scriptFile: "",
+    htmlFile: "welcome.html"
+  });
+
+  welcomePanel.webview.html = welcomeProvider.getHtmlForWebview(welcomePanel.webview);
 }
 
 export function deactivate() {
