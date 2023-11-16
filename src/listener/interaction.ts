@@ -17,7 +17,9 @@ import { ViewProvider, WebviewProvider } from "../provider/view-provider";
 import { Context } from "mocha";
 // import { deployPanel as importedDeployPanel, securityPanel as importedSecurityPanel } from "../extension";
 
-let deployPanel: vscode.WebviewPanel | undefined ;
+let deployPanel: vscode.WebviewPanel | undefined;
+let contractBytecode: any;
+let contractData: Record<string, { abis: any[], bytecodes: string, contract: any }> = {};
 
 export default async function interactionListener(
   this: any,
@@ -168,9 +170,7 @@ export default async function interactionListener(
 
           console.log("interaction.ts - compile - jsonFile --- ", jsonFile);
 
-          const contractData: Record<string, { abis: any[], bytecodes: string, contract: any }> = {};
-          let contractBytecode;
-          let contractList = [];
+          let contractNameList = [];
           for (const contractName in jsonFile) {
             if (jsonFile.hasOwnProperty(contractName)) {
               const contractInfo = jsonFile[contractName];
@@ -178,10 +178,10 @@ export default async function interactionListener(
               const contract = contractName;
               contractData[contractName] = { abis, bytecodes, contract };
               contractBytecode = contractData[contractName].bytecodes;
-              contractList.push(contractName);
+              contractNameList.push(contractName);
             }
           }
-          console.log("interaction.ts - compile - contractList ---", contractList);
+          console.log("interaction.ts - compile - contractList ---", contractNameList);
           console.log("interaction.ts - compile - contractData --- ", contractData);
           console.log("interaction.ts - compile - contractBytecode --- ", contractBytecode);
 
@@ -189,12 +189,12 @@ export default async function interactionListener(
             type: "contractSelect",
             value: {
               solFile: solFile,
-              contractList
+              contractNameList
             }
           });
 
           this.view.webview.postMessage({
-            type: "compileJson",
+            type: "copyJson",
             value: {
               contractData,
               contractBytecode,
@@ -209,32 +209,17 @@ export default async function interactionListener(
 
     case "deploy": {
       console.log("js -> interaction.ts - deploy 실행중...");
-      const { solFile } = event.value;
+      const { solFile, contractSelect } = event.value;
+      console.log("js -> interaction.ts - deploy - solFile --- ", solFile);
+      console.log("js -> interaction.ts - deploy - contractSelect --- ", contractSelect);
+      console.log("js -> interaction.ts - deploy - contractData --- ", contractData);
+      console.log("js -> interaction.ts - deploy - contractBytecode --- ", contractBytecode);
       try {
-        exec(`antibug deploy ${solFile}`, (error, stdout, stderr) => {
-          if (error) {
-            console.error(`exec error: ${error}`);
-            return;
-          }
-          if (stderr) {
-            console.error(`stderr: ${stderr}`);
-          }
-          const directoryPath = stdout.split(":")[1].trim();
-          const jsonFileName = solFile
-            .split("/")
-            .pop()
-            ?.split(".")[0]
-            .concat(".json");
-          const jsonFilePath = path.join(directoryPath, jsonFileName);
-          const jsonFile = require(jsonFilePath);
-
-          const contractData: Record<string, { abis: any[], bytecodes: string, contract: any }> = {};
-          let contractBytecode;
-          let contractList = [];
-          let abiList = [];
-          for (const contractName in jsonFile) {
-            if (jsonFile.hasOwnProperty(contractName)) {
-              const contractInfo = jsonFile[contractName];
+        let contractList = [];
+        for (const contractName in contractData) {
+          if (contractData.hasOwnProperty(contractName)) {
+            if (contractName === contractSelect) {
+              const contractInfo = contractData[contractName];
               const { abis, bytecodes } = contractInfo;
               const contract = contractName;
               contractData[contractName] = { abis, bytecodes, contract };
@@ -242,29 +227,17 @@ export default async function interactionListener(
               const newABIs = makeABIEncode(contractData[contractName].abis);
               contractBytecode = contractData[contractName].bytecodes;
               contractList.push({ contractName, newABIs });
-
-              console.log("interaction.ts - deploy - newABIs --- ", newABIs);
-              console.log("interaction.ts - deploy - contractBytecode --- ", contractBytecode);
-
-              this.view.webview.postMessage({
-                type: "compileJson",
-                value: {
-                  contractData,
-                  contractBytecode,
-                },
-              });
             }
           }
-
-          this.view.webview.postMessage({
-            type: "compiled_webview",
-            value: {
-              abis: contractData,
-              bytecodes: contractBytecode,
-              contractList: contractList,
-            }
-          });
-
+        }
+        console.log("interaction.ts - deploy - contractList --- ", contractList);
+        this.view.webview.postMessage({
+          type: "compiled_webview",
+          value: {
+            abis: contractData,
+            bytecodes: contractBytecode,
+            contractList: contractList,
+          }
         });
       } catch (e) {
         console.log(e);
@@ -348,7 +321,7 @@ async function openPanel(
     deployPanel.onDidDispose(() => {
       deployPanel = undefined;
       vscode.commands.executeCommand('setContext', 'webviewVisible', false);
-  });
+    });
 
   } else if (panel === "securityPanel") {
   }

@@ -10,7 +10,6 @@
   const deployContractButton = document.querySelector(".contract__deploy");
   const contractAddressText = document.querySelector(".contract__address");
   const contractSelect = document.querySelector(".contract__select");
-  const callTxButton = document.querySelector(".call-tx");
   const contractInteractionElement = document.querySelector(".contract__interaction");
 
   const compileInteractionElement = document.querySelector(".compile__interaction");
@@ -66,6 +65,7 @@
       type: "deploy",
       value: {
         solFile: solFilesSelect.value,
+        contractSelect: contractSelect.value,
       },
     });
     vscode.postMessage({ // 고쳐야해
@@ -144,30 +144,30 @@
       case "contractSelect": {
         console.log("ts -> interaction.js - contractSelect 실행중...");
 
-        const { solFile, contractList } = data.value;
+        const { solFile, contractNameList } = data.value;
         contractSelect.innerHTML = '';
 
         console.log("interaction.js - contractSelect - solFile ---", solFile);
-        console.log("interaction.js - contractSelect - contractlist ---", contractList);
+        console.log("interaction.js - contractSelect - contractlist ---", contractNameList);
 
         const solFileName = solFile.split('/').pop();
 
-        contractList.forEach((contractName, index) => {
+        contractNameList.forEach((contractName) => {
           const option = document.createElement("option");
-          option.value = index;
+          option.value = contractName;
           option.innerHTML = `${contractName} - ${solFileName}`;
           contractSelect.appendChild(option);
         });
         break;
       }
 
-      case "compileJson": {
-        console.log("ts -> interaction.js - compileJson 실행중...");
+      case "copyJson": {
+        console.log("ts -> interaction.js - copyJson 실행중...");
         const { contractData, contractBytecode } = data.value;
         const abis = contractData;
         const bytecodes = contractBytecode;
-        console.log("interaction.js - compileJson - contractData -—- ", abis);
-        console.log("interaction.js - compileJson - bytecodes --- ", bytecodes);
+        console.log("interaction.js - copyJson - contractData -—- ", abis);
+        console.log("interaction.js - copyJson - bytecodes --- ", bytecodes);
 
         let abiButton = document.getElementById("abiButton");
         let bytecodesButton = document.getElementById("bytecodesButton");
@@ -206,114 +206,6 @@
 
       // view , pure 함수는 send 버튼이 아닌 call 버튼으로 호출
 
-      // sidebar에 deploy 결과 contract 띄우는 거 필요없음
-      // case "compiled_sidebar": {
-      //   console.log("ts -> interaction.js - compiled_sidebar 실행중...");
-      //   const { abis, bytecodes, contract } = data.value;
-      //   compiledByteCode = bytecodes;
-      //   console.log("interaction.js - compiled_sidebar - abis -—- ", abis);
-      //   console.log("interaction.js - compiled_sidebar - bytecodes --- ", bytecodes);
-      //   console.log("interaction.js - compiled_sidebar - contract ---", contract);
-
-      //   const onlyFunctionAbis = abis.filter(({ type }) => type === "function");
-      //   const contractElement = document.createElement("div");
-      //   contractElement.classList.add("contract");
-
-      //   const contractTitleElement = document.createElement("div");
-      //   const contractNameElement = document.createElement("p");
-      //   const contractChevronDownButtonElement = makeChevronDownButtonElement();
-      //   const contractActionsWrapperElement = document.createElement("div");
-      //   contractActionsWrapperElement.classList.add("contract__actions");
-
-      //   contractTitleElement.classList.add("contract__title");
-      //   contractTitleElement.appendChild(contractNameElement);
-      //   contractNameElement.innerHTML = contract;
-      //   contractTitleElement.appendChild(contractNameElement);
-
-      //   contractElement.appendChild(contractTitleElement);
-      //   contractTitleElement.appendChild(contractChevronDownButtonElement);
-
-      //   contractChevronDownButtonElement.addEventListener("click", () => {
-      //     contractActionsWrapperElement.classList.toggle("hidden");
-      //   });
-
-      //   const functionElements = onlyFunctionAbis.map(
-      //     ({ name, inputs, stateMutability, type, signature }) => {
-      //       const functionElement = document.createElement("div");
-      //       functionElement.classList.add("function");
-
-      //       const functionActionSingleElement = document.createElement("div");
-      //       functionActionSingleElement.classList.add(
-      //         "function__action-single"
-      //       );
-
-      //       const functionActionMultiElement = document.createElement("div");
-      //       functionActionMultiElement.classList.add(
-      //         "function__action-multi",
-      //         "hidden"
-      //       );
-
-      //       let argsElement = [];
-
-      //       const actionElement = document.createElement("button");
-      //       actionElement.innerHTML = name;
-      //       actionElement.classList.add(stateMutability, "function__action");
-      //       functionActionSingleElement.appendChild(actionElement);
-
-      //       if (inputs.length === 1) {
-      //         const inputElement = document.createElement("input");
-      //         inputElement.placeholder = `${inputs[0].type} ${inputs[0].name}`;
-      //         argsElement = [inputElement];
-      //         functionActionSingleElement.appendChild(inputElement);
-      //       }
-
-      //       if (inputs.length > 1) {
-      //         const chevronDownButtonElement = makeChevronDownButtonElement();
-      //         chevronDownButtonElement.addEventListener("click", () => {
-      //           functionActionMultiElement.classList.toggle("hidden");
-      //         });
-      //         functionActionSingleElement.appendChild(chevronDownButtonElement);
-
-      //         argsElement = makeMultiArgsElements(inputs);
-      //         functionActionMultiElement.replaceChildren(...argsElement);
-      //       }
-
-      //       actionElement.addEventListener("click", () => {
-      //         console.log(argsElement);
-      //         const args = argsElement.map(
-      //           (argElement) => argElement.childNodes[1].value
-      //         );
-
-      //         console.log(contractAddressText.innerHTML);
-      //         vscode.postMessage({
-      //           type: "call",
-      //           value: {
-      //             signature,
-      //             args,
-      //             name,
-      //             to: contractAddressText.innerHTML,
-      //             fromPrivateKey: addressSelect.value,
-      //             value: ethInput.value, // TODO
-      //           },
-      //         });
-      //       });
-
-      //       functionElement.replaceChildren(functionActionSingleElement);
-      //       functionElement.appendChild(functionActionMultiElement);
-
-      //       return functionElement;
-      //     }
-      //   );
-      //   contractActionsWrapperElement.replaceChildren(...functionElements);
-
-      //   contractElement.appendChild(contractTitleElement);
-      //   contractElement.appendChild(contractActionsWrapperElement);
-
-      //   contractInteractionElement.appendChild(contractElement);
-
-      //   break;
-      // }
-
       case "compiled_webview": {
         console.log("ts -> interaction.js - compiled_webview 실행중...");
         const { abis, bytecodes, contractList } = data.value;
@@ -335,40 +227,6 @@
       }
     }
   });
-
-  function makeMultiArgsElements(inputs) {
-    const argsElements = inputs.map(({ name, type }) => {
-      const argElement = document.createElement("div");
-      argElement.classList.add("argument");
-
-      const inputNameElement = document.createElement("div");
-      inputNameElement.classList.add("argument__name");
-      inputNameElement.innerHTML = `${type} ${name}`;
-
-      const inputElement = document.createElement("input");
-
-      argElement.appendChild(inputNameElement);
-      argElement.appendChild(inputElement);
-
-      return argElement;
-    });
-
-    return argsElements;
-  }
-
-  function makeChevronDownButtonElement() {
-    const chevronDownButtonElement = document.createElement("div");
-    const chevronDownIconElement = document.createElement("i");
-    chevronDownIconElement.classList.add(
-      "fas",
-      "fa-chevron-down",
-      "dropdown-action"
-    );
-    chevronDownButtonElement.style.cursor = "pointer";
-
-    chevronDownButtonElement.appendChild(chevronDownIconElement);
-    return chevronDownButtonElement;
-  }
 })();
 
 function copyToClipboard(value) {
