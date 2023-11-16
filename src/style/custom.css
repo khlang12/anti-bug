@@ -3,6 +3,10 @@ button {
     border-radius: 5px;
 }
 
+button:disabled {
+    background-color: var(--vscode-disabledForeground);
+}
+
 input, input::placeholder, select {
     font-size: var(--vscode-font-size);
 }
@@ -209,4 +213,20 @@ input, input::placeholder, select {
 .input-similar__contract,
 .input-similar__function {
     margin: 5px 0;
+}
+
+.constructor {
+    display: flex;
+    align-items: center;
+    padding: 5px 5px 0 5px;
+}
+
+.constructor__name {
+    width: 40%;
+    padding: 10px;
+    text-align: right;
+}
+
+.constructor input {
+    padding: 10px;
 }

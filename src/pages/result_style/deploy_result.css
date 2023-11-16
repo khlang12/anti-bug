@@ -93,7 +93,7 @@
 
         .function__action-multi {
             display: flex;
-            padding: 10px;
+            padding: 10px 0 10px 10px;
             flex-direction: column;
             row-gap: 8px;
         }
@@ -110,6 +110,7 @@
 
         .argument__name {
             width: 200px;
+            text-align: right;
         }
 
         .function button {
@@ -156,4 +157,26 @@
 
         .function__action.payable:hover {
             background-color: #d04854;
+        }
+
+        .tooltip {
+            visibility: hidden;
+            width: 120px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .function__action:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
         }

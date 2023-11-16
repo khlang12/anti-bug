@@ -10,6 +10,7 @@
   const deployContractButton = document.querySelector(".contract__deploy");
   const contractAddressText = document.querySelector(".contract__address");
   const contractSelect = document.querySelector(".contract__select");
+  const contractConstructor = document.querySelector(".contract__constructor");
   const contractInteractionElement = document.querySelector(".contract__interaction");
 
   const compileInteractionElement = document.querySelector(".compile__interaction");
@@ -33,6 +34,11 @@
         solFile: solFilesSelect.value,
       },
     });
+    deployContractButton.removeAttribute("disabled");
+  });
+
+  solFilesSelect.addEventListener("change", () => {
+    deployContractButton.setAttribute("disabled", "disabled");
   });
 
   sendInteractionForm.addEventListener("submit", (event) => {
@@ -144,11 +150,12 @@
       case "contractSelect": {
         console.log("ts -> interaction.js - contractSelect 실행중...");
 
-        const { solFile, contractNameList } = data.value;
+        const { solFile, contractNameList, contractData } = data.value;
         contractSelect.innerHTML = '';
 
         console.log("interaction.js - contractSelect - solFile ---", solFile);
-        console.log("interaction.js - contractSelect - contractlist ---", contractNameList);
+        console.log("interaction.js - contractSelect - contractNameList ---", contractNameList);
+        console.log("interaction.js - contractSelect - contractData ---", contractData);
 
         const solFileName = solFile.split('/').pop();
 
@@ -158,6 +165,61 @@
           option.innerHTML = `${contractName} - ${solFileName}`;
           contractSelect.appendChild(option);
         });
+
+        // 아래 코드와 중복 (무조건 1회 실행 되어야 함)
+        while (contractConstructor.firstChild) {
+          contractConstructor.removeChild(contractConstructor.firstChild);
+        }
+
+        const selectedContractName = contractSelect.value;
+        const selectedContractAbi = contractData[selectedContractName].abis;
+        const constructorAbi = selectedContractAbi.find((item) => item.type === "constructor");
+
+        if (constructorAbi && constructorAbi.inputs) {
+          constructorAbi.inputs.forEach((input) => {
+            const constructorElement = document.createElement("div");
+            constructorElement.classList.add("constructor");
+
+              const constructorName = document.createElement("div");
+              constructorName.classList.add("constructor__name");
+              constructorName.innerHTML = `${input.name}`;
+
+              const constructorInput = document.createElement("input");
+              constructorInput.type = "text";
+              constructorInput.placeholder = `${input.type}`;
+
+              constructorElement.appendChild(constructorName);
+              constructorElement.appendChild(constructorInput);
+              contractConstructor.appendChild(constructorElement);
+          });
+        }
+
+        // 위 코드와 중복
+        contractSelect.addEventListener("change", () => {
+          console.log("select contract - ", contractSelect.value);
+
+          while (contractConstructor.firstChild) {
+            contractConstructor.removeChild(contractConstructor.firstChild);
+          }
+
+          const selectedContractName = contractSelect.value;
+          const selectedContractAbi = contractData[selectedContractName].abis;
+          const constructorAbi = selectedContractAbi.find((item) => item.type === "constructor");
+
+          console.log("select contract - name - ", selectedContractName);
+          console.log("select contract - abis - ", selectedContractAbi);
+          console.log("select contract - constructor - ", constructorAbi);
+
+          if (constructorAbi && constructorAbi.inputs) {
+            constructorAbi.inputs.forEach((input) => {
+              const constructorInput = document.createElement("input");
+              constructorInput.type = "text";
+              constructorInput.placeholder = `${input.name} ${input.type}`;
+              contractConstructor.appendChild(constructorInput);
+            });
+          }
+        });
+
         break;
       }
 
@@ -206,12 +268,13 @@
 
       // view , pure 함수는 send 버튼이 아닌 call 버튼으로 호출
 
-      case "compiled_webview": {
-        console.log("ts -> interaction.js - compiled_webview 실행중...");
-        const { abis, bytecodes, contractList } = data.value;
-        console.log("interaction.js - compiled_webview - abis -—- ", abis);
-        console.log("interaction.js - compiled_webview - bytecodes --- ", bytecodes);
-        console.log("interaction.js - compiled_webview - contractList --- ", contractList);
+      case "compiled": {
+        console.log("ts -> interaction.js - compiled 실행중...");
+        const { solFile, abis, bytecodes, contract } = data.value;
+        console.log("interaction.js - compiled - solFile -—- ", solFile);
+        console.log("interaction.js - compiled - abis -—- ", abis);
+        console.log("interaction.js - compiled - bytecodes --- ", bytecodes);
+        console.log("interaction.js - compiled - contractList --- ", contract);
 
         vscode.postMessage({
           type: "webview",
@@ -219,9 +282,10 @@
             panel: "deployPanel",
             title: "Deploy Result",
             filePath: "src/pages/deploy_result.ejs",
+            solFile: solFile,
             abis: abis,
             bytecodes: bytecodes,
-            contract: contractList,
+            contract: contract,
           }
         });
       }

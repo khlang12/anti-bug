@@ -58,8 +58,8 @@ export default async function interactionListener(
 
     case "webview": {
       console.log("js -> interaction.ts - webview 실행중...");
-      const { panel, title, filePath, abis, bytecodes, contract } = event.value;
-      openPanel(panel, title, filePath, { abis, bytecodes, contract });
+      const { panel, title, filePath, solFile, abis, bytecodes, contract } = event.value;
+      openPanel(panel, title, filePath, { solFile, abis, bytecodes, contract });
       break;
     }
 
@@ -123,6 +123,7 @@ export default async function interactionListener(
       });
       break;
     }
+
     case "call": {
       const { signature, name, args, value, fromPrivateKey, to } = event.value;
 
@@ -171,6 +172,7 @@ export default async function interactionListener(
           console.log("interaction.ts - compile - jsonFile --- ", jsonFile);
 
           let contractNameList = [];
+          contractData = {};
           for (const contractName in jsonFile) {
             if (jsonFile.hasOwnProperty(contractName)) {
               const contractInfo = jsonFile[contractName];
@@ -189,7 +191,8 @@ export default async function interactionListener(
             type: "contractSelect",
             value: {
               solFile: solFile,
-              contractNameList
+              contractNameList,
+              contractData
             }
           });
 
@@ -232,11 +235,12 @@ export default async function interactionListener(
         }
         console.log("interaction.ts - deploy - contractList --- ", contractList);
         this.view.webview.postMessage({
-          type: "compiled_webview",
+          type: "compiled",
           value: {
+            solFile: solFile,
             abis: contractData,
             bytecodes: contractBytecode,
-            contractList: contractList,
+            contract: contractList,
           }
         });
       } catch (e) {
@@ -304,18 +308,19 @@ async function openPanel(
 
     vscode.commands.executeCommand('setContext', 'webviewVisible', true);
 
+    const solFile = value.solFile;
     const abis = value.abis;
     const bytecodes = value.bytecodes;
     const contract = value.contract;
 
+    console.log("openPanel - solFile --- ", solFile);
     console.log("openPanel - abis -—- ", abis);
     console.log("openPanel - bytecodes -—- ", bytecodes);
     console.log("openPanel - contract -—- ", contract);
-    console.log("openPanel - deployResult - contract --- ", contract);
 
     deployPanel.webview.postMessage({
       type: "deployResult",
-      value: { abis: abis, bytecodes: bytecodes, contract: contract },
+      value: { solFile: solFile, abis: abis, bytecodes: bytecodes, contract: contract },
     });
 
     deployPanel.onDidDispose(() => {

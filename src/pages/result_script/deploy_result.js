@@ -51,6 +51,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         return deleteButtonElement;
     }
 
+    // make multi argument
     function makeMultiArgsElements(inputs) {
         const argsElements = inputs.map(({ name, type }) => {
             const argElement = document.createElement("div");
@@ -58,9 +59,10 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             const inputNameElement = document.createElement("div");
             inputNameElement.classList.add("argument__name");
-            inputNameElement.innerHTML = `${type} ${name}`;
+            inputNameElement.innerHTML = `${name}`;
 
             const inputElement = document.createElement("input");
+            inputElement.placeholder = `${type} `;
 
             argElement.appendChild(inputNameElement);
             argElement.appendChild(inputElement);
@@ -79,8 +81,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (message === "deployResult") {
 
             console.log("deploy_result.ejs - ", message, " 실행중…");
-            const { abis, bytecodes, contract } = event.data.value;
+            const { solFile, abis, bytecodes, contract } = event.data.value;
 
+            console.log("interaction.ts -> deploy_result.ejs - ", message, " solFile --- ", solFile);
             console.log("interaction.ts -> deploy_result.ejs - ", message, " abis --- ", abis);
             console.log("interaction.ts -> deploy_result.ejs - ", message, " bytecodes --- ", bytecodes);
             console.log("interaction.ts -> deploy_result.ejs - ", message, " contract --- ", contract);
@@ -95,12 +98,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             contractInteractionElements.forEach((contractInteractionElement) => {
                 const contractList = contract;
+                const solFileName = solFile.split('/').pop();
 
                 contractList.forEach((contract) => {
                     const contractName = contract.contractName;
                     const contractAbis = contract.newABIs;
 
-                    console.log(contractName, contractAbis);
+                    console.log("deploy_result.ejs - ", contractName, contractAbis);
 
                     const onlyFunctionAbis = contractAbis.filter(({ type }) => type === "function");
                     const contractElement = document.createElement("div");
@@ -120,7 +124,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     contractElement.appendChild(contractTitleElement);
                     contractTitleElement.appendChild(deleteButtonElement);
                     contractTitleElement.appendChild(contractNameElement);
-                    contractNameElement.innerHTML = contractName;
+                    contractNameElement.innerHTML = `${contractName} - ${solFileName}`;
                     contractTitleElement.appendChild(contractNameElement);
                     contractTitleElement.appendChild(contractChevronDownButtonElement);
 
@@ -155,7 +159,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                             if (inputs.length === 1) {
                                 const inputElement = document.createElement("input");
-                                inputElement.placeholder = `${inputs[0].type} ${inputs[0].name}`;
+                                inputElement.placeholder = `${inputs[0].type}`;
                                 argsElement = [inputElement];
                                 functionActionSingleElement.appendChild(inputElement);
                             }
@@ -172,24 +176,49 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 functionActionMultiElement.replaceChildren(...argsElement);
                             }
 
+                            // function button : stateMutability (call, transact)
                             actionElement.addEventListener("click", () => {
-                                console.log(argsElement);
-                                const args = argsElement.map(
-                                    (argElement) => argElement.childNodes[1].value
-                                );
+                                const args = argsElement.map((argElement) => argElement.childNodes[1].value);
 
-                                console.log(contractAddressText.innerHTML);
-                                vscode.postMessage({
-                                    type: "call",
-                                    value: {
-                                        signature,
-                                        args,
-                                        name,
+                                // 여기서 argsElement를 하나도 못 받아오는데?
+                                console.log("deploy_result.ejs - function button click - argsElement ---", argsElement);
+                                console.log("deploy_result.ejs - function button click - args ---", args);
+                                console.log("deploy_result.ejs - function button click - contractAddressText.innerHTML ---", contractAddressText.innerHTML);
+
+                                const isPayable = actionElement.classList.contains('payable');
+                                const isNonpayable = actionElement.classList.contains('nonpayable');
+
+                                if (isPayable || isNonpayable) {
+                                    const transactionObject = {
                                         to: contractAddressText.innerHTML,
-                                        fromPrivateKey: addressSelect.value,
-                                        value: ethInput.value, // TODO
-                                    },
-                                });
+                                        from: addressSelect.value,
+                                        value: ethInput.value, // 이더 전송할 경우에만 설정
+                                    };
+
+                                    if (isPayable) {
+                                        // payable 함수 호출
+                                        contract.methods[name](...args).send(transactionObject);
+                                    } else if (isNonpayable) {
+                                        // nonpayable 함수 호출
+                                        contract.methods[name](...args).send(transactionObject);
+                                    }
+                                } else {
+                                    // pure 또는 view 함수 호출
+                                    const result = contract.methods[name](...args).call();
+                                    console.log("Result of the view/pure function:", result);
+                                }
+
+                                // vscode.postMessage({
+                                //     type: "call",
+                                //     value: {
+                                //         signature,
+                                //         args,
+                                //         name,
+                                //         to: contractAddressText.innerHTML,
+                                //         fromPrivateKey: addressSelect.value,
+                                //         value: ethInput.value, // TODO
+                                //     },
+                                // });
                             });
 
                             functionElement.replaceChildren(functionActionSingleElement);
