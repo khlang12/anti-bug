@@ -170,6 +170,7 @@ export default async function interactionListener(
 
           const contractData: Record<string, { abis: any[], bytecodes: string, contract: any }> = {};
           let contractBytecode;
+          let contractList = [];
           for (const contractName in jsonFile) {
             if (jsonFile.hasOwnProperty(contractName)) {
               const contractInfo = jsonFile[contractName];
@@ -177,10 +178,20 @@ export default async function interactionListener(
               const contract = contractName;
               contractData[contractName] = { abis, bytecodes, contract };
               contractBytecode = contractData[contractName].bytecodes;
+              contractList.push(contractName);
             }
           }
+          console.log("interaction.ts - compile - contractList ---", contractList);
           console.log("interaction.ts - compile - contractData --- ", contractData);
           console.log("interaction.ts - compile - contractBytecode --- ", contractBytecode);
+
+          this.view.webview.postMessage({
+            type: "contractSelect",
+            value: {
+              solFile: solFile,
+              contractList
+            }
+          });
 
           this.view.webview.postMessage({
             type: "compileJson",

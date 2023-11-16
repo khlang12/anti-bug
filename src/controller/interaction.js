@@ -141,6 +141,26 @@
         break;
       }
 
+      case "contractSelect": {
+        console.log("ts -> interaction.js - contractSelect 실행중...");
+
+        const { solFile, contractList } = data.value;
+        contractSelect.innerHTML = '';
+
+        console.log("interaction.js - contractSelect - solFile ---", solFile);
+        console.log("interaction.js - contractSelect - contractlist ---", contractList);
+
+        const solFileName = solFile.split('/').pop();
+
+        contractList.forEach((contractName, index) => {
+          const option = document.createElement("option");
+          option.value = index;
+          option.innerHTML = `${contractName} - ${solFileName}`;
+          contractSelect.appendChild(option);
+        });
+        break;
+      }
+
       case "compileJson": {
         console.log("ts -> interaction.js - compileJson 실행중...");
         const { contractData, contractBytecode } = data.value;
