@@ -152,7 +152,7 @@ export default async function interactionListener(
       console.log("js -> interaction.ts - compile 실행중...");
       const { solFile } = event.value;
       try {
-        exec(`antibug deploy ${solFile}`, (error, stdout, stderr) => {
+        exec(`antibug compile ${solFile}`, (error, stdout, stderr) => {
           if (error) {
             console.error(`exec error: ${error}`);
             return;

@@ -7,7 +7,7 @@
   const toInput = document.querySelector(".send-eth__to");
   const ethInput = document.querySelector(".send-eth__eth");
 
-  const deployContractButton = document.querySelector(".contract__deploy");
+  const deployButton = document.querySelector(".contract__deploy");
   const contractAddressText = document.querySelector(".contract__address");
   const contractSelect = document.querySelector(".contract__select");
   const contractConstructor = document.querySelector(".contract__constructor");
@@ -34,13 +34,17 @@
         solFile: solFilesSelect.value,
       },
     });
-    deployContractButton.removeAttribute("disabled");
   });
 
   solFilesSelect.addEventListener("change", () => {
-    deployContractButton.setAttribute("disabled", "disabled");
+    deployButton.setAttribute("disabled", "disabled");
+    contractSelect.innerHTML = '';
+    while (contractConstructor.firstChild) {
+      contractConstructor.removeChild(contractConstructor.firstChild);
+    }
   });
 
+  // TODO
   sendInteractionForm.addEventListener("submit", (event) => {
     event.preventDefault();
 
@@ -66,7 +70,7 @@
     navigator.clipboard.writeText(address);
   });
 
-  deployContractButton.addEventListener("click", () => {
+  deployButton.addEventListener("click", () => {
     vscode.postMessage({
       type: "deploy",
       value: {
@@ -74,7 +78,7 @@
         contractSelect: contractSelect.value,
       },
     });
-    vscode.postMessage({ // 고쳐야해
+    vscode.postMessage({ //TODO
       type: "send",
       value: {
         data: compiledByteCode,
@@ -166,7 +170,7 @@
           contractSelect.appendChild(option);
         });
 
-        // 아래 코드와 중복 (무조건 1회 실행 되어야 함)
+        // 아래 코드와 중복
         while (contractConstructor.firstChild) {
           contractConstructor.removeChild(contractConstructor.firstChild);
         }
@@ -175,23 +179,33 @@
         const selectedContractAbi = contractData[selectedContractName].abis;
         const constructorAbi = selectedContractAbi.find((item) => item.type === "constructor");
 
+        console.log("select contract - name - ", selectedContractName);
+        console.log("select contract - abis - ", selectedContractAbi);
+        console.log("select contract - constructor - ", constructorAbi);
+
         if (constructorAbi && constructorAbi.inputs) {
           constructorAbi.inputs.forEach((input) => {
-            const constructorElement = document.createElement("div");
-            constructorElement.classList.add("constructor");
-
-              const constructorName = document.createElement("div");
-              constructorName.classList.add("constructor__name");
-              constructorName.innerHTML = `${input.name}`;
-
-              const constructorInput = document.createElement("input");
-              constructorInput.type = "text";
-              constructorInput.placeholder = `${input.type}`;
-
-              constructorElement.appendChild(constructorName);
-              constructorElement.appendChild(constructorInput);
-              contractConstructor.appendChild(constructorElement);
+            const constructorInput = document.createElement("input");
+            constructorInput.type = "text";
+            constructorInput.placeholder = `${input.name} ${input.type}`;
+            constructorInput.classList.add("constructor__input");
+            contractConstructor.appendChild(constructorInput);
           });
+
+          const constructorInputs = document.querySelectorAll(".constructor__input");
+          constructorInputs.forEach(input => {
+            input.addEventListener("input", () => {
+              console.log("constructor input --- ", input.value);
+              updateDeployButton();
+            });
+          });
+
+          function updateDeployButton() {
+            const isAnyInputEmpty = Array.from(constructorInputs).some(input => input.value.trim() === "");
+            deployButton.disabled = isAnyInputEmpty;
+            console.log("isAnyInputEmpty --- ", isAnyInputEmpty);
+          }
+
         }
 
         // 위 코드와 중복
@@ -215,8 +229,23 @@
               const constructorInput = document.createElement("input");
               constructorInput.type = "text";
               constructorInput.placeholder = `${input.name} ${input.type}`;
+              constructorInput.classList.add("constructor__input");
               contractConstructor.appendChild(constructorInput);
             });
+
+            const constructorInputs = document.querySelectorAll(".constructor__input");
+            constructorInputs.forEach(input => {
+              input.addEventListener("input", () => {
+                console.log("constructor input --- ", input.value);
+                updateDeployButton();
+              });
+            });
+
+            function updateDeployButton() {
+              const isAnyInputEmpty = Array.from(constructorInputs).some(input => input.value.trim() === "");
+              deployButton.disabled = isAnyInputEmpty;
+              console.log("isAnyInputEmpty --- ", isAnyInputEmpty);
+            }
           }
         });
 

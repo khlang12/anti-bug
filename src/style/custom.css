@@ -227,6 +227,6 @@ input, input::placeholder, select {
     text-align: right;
 }
 
-.constructor input {
+.constructor__input {
     padding: 10px;
 }
