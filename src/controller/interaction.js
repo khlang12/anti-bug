@@ -9,6 +9,7 @@
 
   const deployContractButton = document.querySelector(".contract__deploy");
   const contractAddressText = document.querySelector(".contract__address");
+  const contractSelect = document.querySelector(".contract__select");
   const callTxButton = document.querySelector(".call-tx");
   const contractInteractionElement = document.querySelector(".contract__interaction");
 

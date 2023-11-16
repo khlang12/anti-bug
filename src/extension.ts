@@ -7,6 +7,7 @@ import interactionListener from "./listener/interaction";
 import testcodeListener from "./listener/testcode";
 import securityListener from "./listener/security";
 import exp = require("constants");
+import { subscribe } from "diagnostics_channel";
 
 export async function activate(context: vscode.ExtensionContext) {
   const antibugNode = await AntibugNode.create();
@@ -93,6 +94,8 @@ export async function activate(context: vscode.ExtensionContext) {
   });
 
   welcomePanel.webview.html = welcomeProvider.getHtmlForWebview(welcomePanel.webview);
+
+
 }
 
 export function deactivate() {
