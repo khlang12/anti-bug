@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import { promises as fsPromises } from 'fs';
 import * as ejs from "ejs";
 import * as path from "path";
 import * as vscode from "vscode";
@@ -74,15 +75,6 @@ export default async function interactionListener(
         to,
       } = event.value;
 
-      console.log("js -> interaction.ts - send 실행중…");
-      console.log("interaction.ts - send - data --- ", data);
-      console.log("interaction.ts - send - callData --- ", callData);
-      console.log("interaction.ts - send - maxFeePerGas --- ", maxFeePerGas);
-      console.log("interaction.ts - send - gasLimit --- ", gasLimit);
-      console.log("interaction.ts - send - fromPrivateKey --- ", fromPrivateKey);
-      console.log("interaction.ts - send - value --- ", value);
-      console.log("interaction.ts - send - to --- ", to);
-
       const latestBlock = antibugNode.getLatestBlock();
       const estimatedGasLimit = antibugNode.getEstimatedGasLimit(latestBlock);
       const baseFee = latestBlock.header.calcNextBaseFee();
@@ -106,6 +98,15 @@ export default async function interactionListener(
       const fromBalance = await antibugNode.getBalance(from);
       const toBalance = to ? await antibugNode.getBalance(to) : 0n;
 
+      console.log("js -> interaction.ts - send 실행중…");
+      console.log("interaction.ts - send - data --- ", data);
+      console.log("interaction.ts - send - callData --- ", callData);
+      console.log("interaction.ts - send - maxFeePerGas --- ", maxFeePerGas);
+      console.log("interaction.ts - send - gasLimit --- ", gasLimit);
+      console.log("interaction.ts - send - fromPrivateKey --- ", fromPrivateKey);
+      console.log("interaction.ts - send - value --- ", value);
+      console.log("interaction.ts - send - to --- ", to);
+
       this.view.webview.postMessage({
         type: "receipt",
         value: {
@@ -121,6 +122,7 @@ export default async function interactionListener(
           amountSpent: receipt.amountSpent.toString(),
         },
       });
+
       break;
     }
 
@@ -152,7 +154,7 @@ export default async function interactionListener(
       console.log("js -> interaction.ts - compile 실행중...");
       const { solFile } = event.value;
       try {
-        exec(`antibug compile ${solFile}`, (error, stdout, stderr) => {
+        exec(`antibug compile ${solFile}`, async (error, stdout, stderr) => {
           if (error) {
             console.error(`exec error: ${error}`);
             return;
@@ -167,42 +169,50 @@ export default async function interactionListener(
             ?.split(".")[0]
             .concat(".json");
           const jsonFilePath = path.join(directoryPath, jsonFileName);
-          const jsonFile = require(jsonFilePath);
+          // const jsonFile = require(jsonFilePath);
 
-          console.log("interaction.ts - compile - jsonFile --- ", jsonFile);
+          try {
+            const data = await fsPromises.readFile(jsonFilePath, 'utf-8');
+            const jsonFile = JSON.parse(data);
 
-          let contractNameList = [];
-          contractData = {};
-          for (const contractName in jsonFile) {
-            if (jsonFile.hasOwnProperty(contractName)) {
-              const contractInfo = jsonFile[contractName];
-              const { abis, bytecodes } = contractInfo;
-              const contract = contractName;
-              contractData[contractName] = { abis, bytecodes, contract };
-              contractBytecode = contractData[contractName].bytecodes;
-              contractNameList.push(contractName);
+            console.log("interaction.ts - compile - jsonFile --- ", jsonFile);
+
+            let contractNameList = [];
+            contractData = {};
+            for (const contractName in jsonFile) {
+              if (jsonFile.hasOwnProperty(contractName)) {
+                const contractInfo = jsonFile[contractName];
+                const { abis, bytecodes } = contractInfo;
+                const contract = contractName;
+                contractData[contractName] = { abis, bytecodes, contract };
+                contractBytecode = contractData[contractName].bytecodes;
+                contractNameList.push(contractName);
+              }
             }
+            console.log("interaction.ts - compile - contractList ---", contractNameList);
+            console.log("interaction.ts - compile - contractData --- ", contractData);
+            console.log("interaction.ts - compile - contractBytecode --- ", contractBytecode);
+
+            this.view.webview.postMessage({
+              type: "contractSelect",
+              value: {
+                solFile: solFile,
+                contractNameList,
+                contractData
+              }
+            });
+
+            this.view.webview.postMessage({
+              type: "copyJson",
+              value: {
+                contractData,
+                contractBytecode,
+              }
+            });
+
+          } catch (err) {
+            console.error(`Error reading JSON file: ${err}`);
           }
-          console.log("interaction.ts - compile - contractList ---", contractNameList);
-          console.log("interaction.ts - compile - contractData --- ", contractData);
-          console.log("interaction.ts - compile - contractBytecode --- ", contractBytecode);
-
-          this.view.webview.postMessage({
-            type: "contractSelect",
-            value: {
-              solFile: solFile,
-              contractNameList,
-              contractData
-            }
-          });
-
-          this.view.webview.postMessage({
-            type: "copyJson",
-            value: {
-              contractData,
-              contractBytecode,
-            }
-          });
         });
       } catch (e) {
         console.log(e);

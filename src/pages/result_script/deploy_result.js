@@ -196,29 +196,28 @@ document.addEventListener("DOMContentLoaded", async function () {
                                     };
 
                                     if (isPayable) {
-                                        // payable 함수 호출
+                                        // payable function
                                         contract.methods[name](...args).send(transactionObject);
                                     } else if (isNonpayable) {
-                                        // nonpayable 함수 호출
+                                        // nonpayable function
                                         contract.methods[name](...args).send(transactionObject);
                                     }
                                 } else {
-                                    // pure 또는 view 함수 호출
+                                    // pure, view function
+                                    vscode.postMessage({
+                                        type: "call",
+                                        value: {
+                                            signature,
+                                            args,
+                                            name,
+                                            to: contractAddressText.innerHTML,
+                                            fromPrivateKey: addressSelect.value,
+                                            value: ethInput.value, // TODO
+                                        },
+                                    });
                                     const result = contract.methods[name](...args).call();
                                     console.log("Result of the view/pure function:", result);
                                 }
-
-                                // vscode.postMessage({
-                                //     type: "call",
-                                //     value: {
-                                //         signature,
-                                //         args,
-                                //         name,
-                                //         to: contractAddressText.innerHTML,
-                                //         fromPrivateKey: addressSelect.value,
-                                //         value: ethInput.value, // TODO
-                                //     },
-                                // });
                             });
 
                             functionElement.replaceChildren(functionActionSingleElement);

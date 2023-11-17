@@ -122,61 +122,39 @@
         }
 
         .function__action {
-            max-width: 150px;
-            width: 100%;
+            min-width: 120px;
             padding: 8px;
             border-radius: 5px;
-            background-color: #e9950c;
+            background-color: var(--vscode-terminal-ansiBrightGreen);
+            color: var(--vscode-peekViewTitleLabel-foreground);
         }
 
         .function__action-single input {
             position: relative;
-            top: 1px;
-            min-height: 100%;
-            border-top-left-radius: 0px;
-            border-bottom-left-radius: 0px;
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+            font-size: smaller;
         }
 
         .function__action:hover {
-            background-color: #d1850b;
+            background-color: var(--vscode-terminal-ansiGreen);
         }
 
         .function__action.pure,
         .function__action.view {
-            background-color: #2e95d3;
+            background-color: var(--vscode-terminal-ansiBrightBlue);
         }
 
         .function__action.pure:hover,
         .function__action.view:hover {
-            background-color: #2887bf;
+            background-color: var(--vscode-terminal-ansiBlue);
         }
 
         .function__action.payable {
-            background-color: #ef5562;
+            background-color: var(--vscode-terminal-ansiBrightMagenta);
         }
 
         .function__action.payable:hover {
-            background-color: #d04854;
-        }
-
-        .tooltip {
-            visibility: hidden;
-            width: 120px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -60px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .function__action:hover .tooltip {
-            visibility: visible;
-            opacity: 1;
+            background-color: var(--vscode-terminal-ansiMagenta);
         }

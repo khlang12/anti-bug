@@ -28,6 +28,7 @@
 
   //TODO: Refactor
   compileButton.addEventListener("click", () => {
+    deployButton.setAttribute("disabled", "disabled");
     vscode.postMessage({
       type: "compile",
       value: {
@@ -114,7 +115,7 @@
         break;
       }
 
-      case "receipt": {
+      case "receipt": {  // send 반영하여 addressSelect 업데이트만 구현됨 receipt 띄워야해
         const {
           accounts,
           contractAddress,
@@ -124,6 +125,15 @@
         } = data.value;
         const { from, to, fromBalance, toBalance } = accounts;
         const options = addressSelect.querySelectorAll("option");
+
+        console.log("interaction.js - receipt - from --- ", from);
+        console.log("interaction.js - receipt - to --- ", to);
+        console.log("interaction.js - receipt - fromBalance --- ", fromBalance);
+        console.log("interaction.js - receipt - toBalance --- ", toBalance);
+        console.log("interaction.js - receipt - exectResult --- ", exectResult);
+        console.log("interaction.js - receipt - totalGasSpent --- ", totalGasSpent);
+        console.log("interaction.js - receipt - amountSpent --- ", amountSpent);
+
 
         const fromOption = [...options].find((option) =>
           option.innerHTML.includes(from)
@@ -147,6 +157,9 @@
         if (contractAddress) {
           contractAddressText.innerHTML = contractAddress;
         }
+
+        console.log("interaction.js - receipt - contractAddress --- ", contractAddress);
+
 
         break;
       }
@@ -211,6 +224,7 @@
 
         // 위 코드와 중복
         contractSelect.addEventListener("change", () => {
+          deployButton.setAttribute("disabled", "disabled");
           console.log("select contract - ", contractSelect.value);
 
           while (contractConstructor.firstChild) {
