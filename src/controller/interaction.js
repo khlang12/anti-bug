@@ -205,7 +205,8 @@
             deployButton.disabled = isAnyInputEmpty;
             console.log("isAnyInputEmpty --- ", isAnyInputEmpty);
           }
-
+        } else {
+          deployButton.disabled = false;
         }
 
         // 위 코드와 중복
@@ -246,6 +247,8 @@
               deployButton.disabled = isAnyInputEmpty;
               console.log("isAnyInputEmpty --- ", isAnyInputEmpty);
             }
+          } else {
+            deployButton.disabled = false;
           }
         });
 
