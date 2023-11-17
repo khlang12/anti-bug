@@ -198,7 +198,8 @@
 
         if (constructorAbi && constructorAbi.inputs) {
           const constructorHead = document.createElement("p");
-          constructorHead.innerHTML = `<p class="head">Constructor</p>`;
+          constructorHead.innerHTML = "Constructor";
+          constructorHead.classList.add("head");
           contractConstructor.append(constructorHead);
 
           constructorAbi.inputs.forEach((input) => {
@@ -221,9 +222,8 @@
           });
 
           const constructorInputs = document.querySelectorAll(".constructor__input");
-          constructorInputs.forEach(input => {
-            input.addEventListener("input", () => {
-              console.log("constructor input --- ", input.value);
+          constructorInputs.forEach(constructorInput => {
+            constructorInput.addEventListener("input", () => {
               updateDeployButton();
             });
           });
@@ -277,7 +277,6 @@
             const constructorInputs = document.querySelectorAll(".constructor__input");
             constructorInputs.forEach(input => {
               input.addEventListener("input", () => {
-                console.log("constructor input --- ", input.value);
                 updateDeployButton();
               });
             });
@@ -285,7 +284,6 @@
             function updateDeployButton() {
               const isAnyInputEmpty = Array.from(constructorInputs).some(input => input.value.trim() === "");
               deployButton.disabled = isAnyInputEmpty;
-              console.log("isAnyInputEmpty --- ", isAnyInputEmpty);
             }
           } else {
             deployButton.disabled = false;

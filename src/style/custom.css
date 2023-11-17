@@ -12,7 +12,7 @@ input, input::placeholder, select {
 }
 
 .head {
-    margin: 15px 0 10px 0;
+    margin: 15px 0 7px 0;
     font-weight: bold;
 }
 
@@ -58,120 +58,24 @@ input, input::placeholder, select {
     background: var(--vscode-editorHoverWidget-highlightForeground);
 }
 
-.contract__title {
-    display: flex;
-    justify-content: space-between;
-    column-gap: 10px;
-
-    font-size: 15px;
-    font-weight: bold;
-    border-top: 1px solid #e9950c;
-    border-bottom: 1px solid #3d3d3d;
-    padding: 10px 0px;
-}
-
-.contract__actions {
-    display: flex;
-    flex-direction: column;
-    row-gap: 10px;
-
-    padding: 10px 0px;
-}
-
-.contract__actions.hidden {
-    display: none;
-}
-
-.function__action-single {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.function__action-multi {
-    display: flex;
-    padding: 10px;
-    flex-direction: column;
-    row-gap: 8px;
-}
-
-.function__action-multi.hidden {
-    display: none;
-}
-
-.argument {
-    display: flex;
-    align-items: flex-end;
-    column-gap: 10px;
-}
-
-.argument__name {
-    width: 200px;
-}
-
-.function__action {
-    max-width: 150px;
-    width: 100%;
-
+.compile__solFiles,
+.send-eth select,
+.send-eth input,
+.contract__select {
+    border: 1px solid var(--vscode-input-background);
     border-radius: 5px;
-    background-color: #e9950c;
+    outline: none;
+
 }
 
-.function__action:has(+ input) {
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-.function__action-single input {
-    position: relative;
-    top: 1px;
-    min-height: 100%;
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
-}
-
-.function__action:hover {
-    background-color: #d1850b;
-}
-
-.function__action.pure,
-.function__action.view {
-    background-color: #2e95d3;
-}
-
-.function__action.pure:hover,
-.function__action.view:hover {
-    background-color: #2887bf;
-}
-
-.function__action.payable {
-    background-color: #f22c3d;
-}
-
-.function__action.payable:hover {
-    background-color: #d22635;
-}
-
-.send-eth__gas:hover,
-.send-eth__to:hover,
-.send-eth__eth:hover,
 .compile__solFiles:focus,
-.send-eth__select:focus,
-.send-eth__unit:focus,
-.send-eth__gas:focus,
-.send-eth__to:focus,
-.send-eth__eth:focus {
+.send-eth select:focus,
+.send-eth input:hover,
+.contract__select:focus {
     border: 1px solid #e9950c;
     border-radius: 5px;
-}
-
-.compile__solFiles:focus,
-.send-eth__select:focus,
-.send-eth__unit:focus,
-.send-eth__gas:focus,
-.send-eth__to:focus,
-.send-eth__eth:focus {
     outline: none;
+
 }
 
 #toggle-content {
@@ -218,7 +122,6 @@ input, input::placeholder, select {
 .constructor {
     display: flex;
     align-items: center;
-    padding: 5px 0 0 5px;
 }
 
 .constructor__name {
