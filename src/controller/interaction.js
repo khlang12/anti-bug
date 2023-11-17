@@ -197,12 +197,27 @@
         console.log("select contract - constructor - ", constructorAbi);
 
         if (constructorAbi && constructorAbi.inputs) {
+          const constructorHead = document.createElement("p");
+          constructorHead.innerHTML = `<p class="head">Constructor</p>`;
+          contractConstructor.append(constructorHead);
+
           constructorAbi.inputs.forEach((input) => {
+            const constructorElement = document.createElement("div");
+            constructorElement.classList.add("constructor");
+
+            const constructorName = document.createElement("div");
+            constructorName.classList.add("constructor__name");
+            constructorName.innerHTML = `${input.name}`;
+
             const constructorInput = document.createElement("input");
             constructorInput.type = "text";
-            constructorInput.placeholder = `${input.name} ${input.type}`;
+            constructorInput.placeholder = `${input.type}`;
             constructorInput.classList.add("constructor__input");
-            contractConstructor.appendChild(constructorInput);
+
+            constructorElement.appendChild(constructorName);
+            constructorElement.appendChild(constructorInput);
+
+            contractConstructor.appendChild(constructorElement);
           });
 
           const constructorInputs = document.querySelectorAll(".constructor__input");
@@ -241,11 +256,22 @@
 
           if (constructorAbi && constructorAbi.inputs) {
             constructorAbi.inputs.forEach((input) => {
+              const constructorElement = document.createElement("div");
+              constructorElement.classList.add("constructor");
+
+              const constructorName = document.createElement("div");
+              constructorName.classList.add("constructor__name");
+              constructorName.innerHTML = `${input.name}`;
+
               const constructorInput = document.createElement("input");
               constructorInput.type = "text";
-              constructorInput.placeholder = `${input.name} ${input.type}`;
+              constructorInput.placeholder = `${input.type}`;
               constructorInput.classList.add("constructor__input");
-              contractConstructor.appendChild(constructorInput);
+
+              constructorElement.appendChild(constructorName);
+              constructorElement.appendChild(constructorInput);
+
+              contractConstructor.appendChild(constructorElement);
             });
 
             const constructorInputs = document.querySelectorAll(".constructor__input");
