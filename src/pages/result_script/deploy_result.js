@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     contractElement.appendChild(contractTitleElement);
                     contractElement.appendChild(contractActionsWrapperElement);
 
-                    contractInteractionElement.appendChild(contractElement);
+                    contractInteractionElement.prepend(contractElement);
                 });
             });
 
