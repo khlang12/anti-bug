@@ -45,6 +45,13 @@
     }
   });
 
+  ethInput.addEventListener("input", () => {
+    const inputValue = parseInt(ethInput.value, 10);
+    if ( inputValue < 0 ) {
+      ethInput.value = 0;
+    }
+  });
+
   // TODO
   sendInteractionForm.addEventListener("submit", (event) => {
     event.preventDefault();
