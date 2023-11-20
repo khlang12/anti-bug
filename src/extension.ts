@@ -95,7 +95,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   welcomePanel.webview.html = welcomeProvider.getHtmlForWebview(welcomePanel.webview);
 
-
 }
 
 export function deactivate() {
