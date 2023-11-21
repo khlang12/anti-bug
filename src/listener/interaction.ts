@@ -224,11 +224,13 @@ export default async function interactionListener(
 
     case "deploy": {
       console.log("js -> interaction.ts - deploy 실행중...");
-      const { solFile, contractSelect, constructorInputValues, fromPrivateKey } = event.value;
+      const { solFile, contractSelect, constructorInputValues, fromPrivateKey, gasLimit, value } = event.value;
       console.log("js -> interaction.ts - deploy - solFile --- ", solFile);
       console.log("js -> interaction.ts - deploy - contractSelect --- ", contractSelect);
       console.log("js -> interaction.ts - deploy - contructorInputs --- ", constructorInputValues);
       console.log("js -> interaction.ts - deploy - fromPrivateKey --- ", fromPrivateKey);
+      console.log("js -> interaction.ts - deploy - gasLimit --- ", gasLimit);
+      console.log("js -> interaction.ts - deploy - value --- ", value);
       console.log("js -> interaction.ts - deploy - contractData --- ", contractData);
       console.log("js -> interaction.ts - deploy - contractBytecode --- ", contractBytecode);
       try {
@@ -262,7 +264,13 @@ export default async function interactionListener(
         console.log("interaction.ts - deploy - contractFactory --- ", contractFactory);
 
         const convertedInputValues = constructorInputValues.map((value: string) => ethers.BigNumber.from(value));
-        const deployedContract = await contractFactory.deploy(...convertedInputValues);
+        console.log("interaction.ts - deploy - convertedInputValues --- ", convertedInputValues);
+
+        const tx = {
+          gasLimit: ethers.BigNumber.from(gasLimit),
+          value: ethers.utils.parseEther(value.toString()),
+        };
+        const deployedContract = await contractFactory.deploy(tx, ...convertedInputValues);
         console.log("interaction.ts - deploy - deployedContract --- ", deployedContract);
 
         await deployedContract.deployed();

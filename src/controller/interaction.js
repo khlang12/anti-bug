@@ -70,6 +70,8 @@
     console.log("deploy clicked - contractSelect --- ", contractSelect.value);
     console.log("deploy clicked - constructorInputValues --- ", constructorInputValues);
     console.log("deploy clicked - fromPrivateKey --- ", addressSelect.value);
+    console.log("deploy clicked - gasLimit --- ", gasLimit.value);
+    console.log("deploy clicked - ethInput --- ", ethInput.value);
 
     vscode.postMessage({
       type: "deploy",
@@ -77,15 +79,17 @@
         solFile: solFilesSelect.value,
         contractSelect: contractSelect.value,
         constructorInputValues: constructorInputValues,
-        fromPrivateKey: addressSelect.value
+        fromPrivateKey: addressSelect.value,
+        gasLimit: gasLimit.value,
+        value: ethInput.value
       },
     });
     vscode.postMessage({
       type: "send",
       value: {
         data: compiledByteCode,
-        // callData: ,
-        // maxFeePergas: ,
+        // callData,
+        // maxFeePergas,
         gasLimit: gasLimit.value,
         fromPrivateKey: addressSelect.value,
         value: ethInput.value,
@@ -111,7 +115,7 @@
           ({ address, privateKey, balance }) => {
             const option = document.createElement("option");
             option.value = privateKey;
-            option.innerHTML = `${address} (${balance})`;
+            option.innerHTML = `${address} (${balance} ETH)`;
             return option;
           }
         );
