@@ -1,10 +1,8 @@
-import * as fs from "fs";
 import { promises as fsPromises } from 'fs';
-import * as ejs from "ejs";
 import * as path from "path";
 import * as vscode from "vscode";
 import Web3 from 'web3';
-import * as ethers from "ethers";
+import { Signer, Wallet, ethers } from 'ethers';
 import * as util from 'util';
 import {
   BlobEIP4844Transaction,
@@ -18,8 +16,8 @@ import { privateKeyToAddress } from "../util";
 import { exec } from "child_process";
 import { DEFAULT_ACCOUNTS } from "../util/config";
 import { ViewProvider, WebviewProvider } from "../provider/view-provider";
-import { Context } from "mocha";
-import { Wallet } from "ethers";
+import { JsonRpcProvider } from '@ethersproject/providers';
+
 
 
 let deployPanel: vscode.WebviewPanel | undefined;
@@ -251,30 +249,31 @@ export default async function interactionListener(
         }
         console.log("interaction.ts - deploy - contractList --- ", contractList);
 
-        // 추가하고 있는 중
-        const node = await AntibugNode.create(fromPrivateKey);
-        console.log("node --- ", util.inspect(node, {depth: 3}));
+        const provider = new JsonRpcProvider('http://127.0.0.1:8545');
+        console.log("interaction.ts - deploy - provider --- ", provider);
 
-        const contractFactory = new ethers.ContractFactory(contractList[0].newABIs, contractBytecode, fromPrivateKey);
-        console.log("contractFactory --- ", contractFactory);
+        const signer: Signer = new Wallet(fromPrivateKey, provider);
+        console.log("interaction.ts - deploy - signer --- ", signer);
+
+        const selectedContract = contractList[0];
+        const { contractName, newABIs } = selectedContract;
+
+        const contractFactory = new ethers.ContractFactory(newABIs, contractBytecode, signer);
+        console.log("interaction.ts - deploy - contractFactory --- ", contractFactory);
 
         const convertedInputValues = constructorInputValues.map((value: string) => ethers.BigNumber.from(value));
-        console.log("convertedInputValues --- ", convertedInputValues);
-
         const deployedContract = await contractFactory.deploy(...convertedInputValues);
-        console.log("deployedContract --- ", deployedContract);
+        console.log("interaction.ts - deploy - deployedContract --- ", deployedContract);
 
-        await deployedContract.deployTransaction.wait();
+        await deployedContract.deployed();
 
-        const deployedAddress = deployedContract.address;
-        console.log("js -> interaction.ts - deploy - deployedAddress --- ", deployedAddress);
+        console.log(`${contractName} deploy success`);
+        console.log(`contractAddress : ${deployedContract.address}`);
 
-        const genesisBlock = await node.vm.blockchain.getBlock(0);
-        const deployedBlock = await node.vm.blockchain.getBlock(1);
-        const deployedAntibugChain = new AntibugChain({ common: node.common, genesisBlock });
-        deployedAntibugChain.putBlock(deployedBlock);
+        const deployingAccountAddress = await signer.getAddress();
+        const deployingAccountBalance = await provider.getBalance(deployingAccountAddress);
+        console.log(`Deploying account (${deployingAccountAddress}) balance: ${deployingAccountBalance.toString()}`);
 
-        // 여기까지
 
         this.view.webview.postMessage({
           type: "compiled",

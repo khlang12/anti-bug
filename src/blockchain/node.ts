@@ -13,8 +13,6 @@ import {
 } from "@ethereumjs/tx";
 import { DEFAULT_ACCOUNTS } from "../util/config";
 import { window } from "vscode";
-import { JsonRpcProvider } from '@ethersproject/providers';
-
 
 export default class AntibugNode {
   public common: Common;

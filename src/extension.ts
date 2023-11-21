@@ -8,6 +8,8 @@ import testcodeListener from "./listener/testcode";
 import securityListener from "./listener/security";
 import exp = require("constants");
 import { subscribe } from "diagnostics_channel";
+import { DEFAULT_ACCOUNTS } from "./util/config";
+import { exec } from "child_process";
 
 export async function activate(context: vscode.ExtensionContext) {
   const antibugNode = await AntibugNode.create();
@@ -95,6 +97,28 @@ export async function activate(context: vscode.ExtensionContext) {
 
   welcomePanel.webview.html = welcomeProvider.getHtmlForWebview(welcomePanel.webview);
 
+
+  // Ganache local chain Starting
+  try {
+    let ganacheCommand = 'ganache-cli';
+    
+    for (const account of DEFAULT_ACCOUNTS) {
+      ganacheCommand += ` --account="${account.privateKey},${account.balance}"`;
+    }
+
+    exec(ganacheCommand, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error starting ganache-cli: ${error.message}`);
+        return;
+      }
+      console.log(`ganache-cli output: ${stdout}`);
+      console.error(`ganache-cli errors: ${stderr}`);
+    });
+
+    console.log("Ganache starting");
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 export function deactivate() {
