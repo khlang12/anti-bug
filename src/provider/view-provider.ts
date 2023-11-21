@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 import * as ejs from "ejs";
 import * as fs from "fs";
 

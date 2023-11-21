@@ -270,10 +270,13 @@ export default async function interactionListener(
           gasLimit: ethers.BigNumber.from(gasLimit),
           value: ethers.utils.parseEther(value.toString()),
         };
-        const deployedContract = await contractFactory.deploy(tx, ...convertedInputValues);
+        console.log("interaction.ts - deploy - tx --- ", tx);
+
+
+        const deployedContract = await contractFactory.deploy(...convertedInputValues, tx);
         console.log("interaction.ts - deploy - deployedContract --- ", deployedContract);
 
-        await deployedContract.deployed();
+        await deployedContract.deployTransaction.wait();
 
         console.log(`${contractName} deploy success`);
         console.log(`contractAddress : ${deployedContract.address}`);
