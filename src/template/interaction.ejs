@@ -18,7 +18,7 @@
   <p class="head">Chain</p>
   <input class="" type="text" placeholder="AntiBug Testnet" disabled />
 
-  <form class="send-eth">
+  <form class="contract__deploy-form">
     <p class="head">Account</p>
     <div class="send-eth__address">
       <select class="send-eth__select"></select>
@@ -43,19 +43,17 @@
         <option value="finney">Finney</option>
       </select>
     </div>
-    <button type="submit" class="send-eth__send">Send</button>
+
+    <div class="contract">
+      <p class="head">Contract</p>
+      <select class="contract__select"></select>
+      <div class="contract__constructor"></div>
+
+      <p class="contract__address">Contract: -</p>
+      <button type="submit" class="contract__deploy" disabled>Deploy</button>
+    </div>
   </form>
 
-  <div class="contract">
-    <p class="head">Contract</p>
-    <select class="contract__select"></select>
-    <div class="contract__constructor"></div>
-
-    <p class="contract__address">Contract: -</p>
-    <button class="contract__deploy" disabled>Deploy</button>
-
-    <div class="contract__interaction"></div>
-  </div>
 
   <%-include('script.ejs') %>
     <script nonce="<%= nonce %>" src="https://use.fontawesome.com/releases/v5.2.0/js/all.js"></script>

@@ -1,6 +1,8 @@
 import { Chain, Hardfork, Common } from "@ethereumjs/common";
 import { RunTxResult, VM } from "@ethereumjs/vm";
+import { Trie } from "@ethereumjs/trie";
 import { makeGenesisState, privateKeyToAddress } from "../util";
+import { Wallet, Signer, ethers, ContractFactory } from 'ethers';
 import { Block } from "@ethereumjs/block";
 import AntibugChain from "./blockchain";
 import { Address, bytesToHex, hexToBytes } from "@ethereumjs/util";
@@ -10,13 +12,17 @@ import {
   LegacyTransaction,
 } from "@ethereumjs/tx";
 import { DEFAULT_ACCOUNTS } from "../util/config";
+import { window } from "vscode";
+import { JsonRpcProvider } from '@ethersproject/providers';
+
 
 export default class AntibugNode {
   public common: Common;
   public blockchain: AntibugChain;
   public vm: VM;
+  public signer?: Signer;
 
-  static async create() {
+  static async create(privateKey?: string): Promise<AntibugNode> {
     const genesisHeader = {
       timestamp: "0x0",
       gasLimit: 300000000,
@@ -43,25 +49,33 @@ export default class AntibugNode {
       genesisState: makeGenesisState(DEFAULT_ACCOUNTS),
     });
 
-    // 실제 vm과 연동되는 블록체인은 아님
     const genesisBlock = await vm.blockchain.getBlock(0);
     const blockchain = new AntibugChain({ common, genesisBlock });
 
-    return new AntibugNode({ common, vm, blockchain });
+    if (privateKey) {
+      let signer = new ethers.Wallet(privateKey);
+      return new AntibugNode({ common, vm, blockchain, signer });
+    } else {
+      return new AntibugNode({ common, vm, blockchain });
+    }
+
   }
 
   constructor({
     common,
     vm,
     blockchain,
+    signer,
   }: {
     common: Common;
     vm: VM;
     blockchain: AntibugChain;
+    signer?: Signer;
   }) {
     this.common = common;
     this.vm = vm;
     this.blockchain = blockchain;
+    this.signer = signer;
   }
 
   public async getBalance(hexAddress: string): Promise<bigint> {
@@ -114,9 +128,9 @@ export default class AntibugNode {
     block,
   }: {
     tx:
-      | FeeMarketEIP1559Transaction
-      | LegacyTransaction
-      | BlobEIP4844Transaction;
+    | FeeMarketEIP1559Transaction
+    | LegacyTransaction
+    | BlobEIP4844Transaction;
     block?: Block;
   }): Promise<RunTxResult> {
     return await this.vm.runTx({

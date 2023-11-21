@@ -1,17 +1,17 @@
 (function () {
   const vscode = acquireVsCodeApi();
-  const sendInteractionForm = document.querySelector(".send-eth");
   const addressSelect = document.querySelector(".send-eth__select");
   const addressCopyButton = document.querySelector(".send-eth__copy");
   const gasLimit = document.querySelector(".send-eth__gas");
   const toInput = document.querySelector(".send-eth__to");
   const ethInput = document.querySelector(".send-eth__eth");
 
+  const deployForm = document.querySelector('.contract__deploy-form');
   const deployButton = document.querySelector(".contract__deploy");
   const contractAddressText = document.querySelector(".contract__address");
   const contractSelect = document.querySelector(".contract__select");
   const contractConstructor = document.querySelector(".contract__constructor");
-  const contractInteractionElement = document.querySelector(".contract__interaction");
+  const contractConstructorInputs = document.querySelectorAll(".constructor__input");
 
   const compileInteractionElement = document.querySelector(".compile__interaction");
 
@@ -47,15 +47,39 @@
 
   ethInput.addEventListener("input", () => {
     const inputValue = parseInt(ethInput.value, 10);
-    if ( inputValue < 0 ) {
+    if (inputValue < 0) {
       ethInput.value = 0;
     }
   });
 
-  // TODO
-  sendInteractionForm.addEventListener("submit", (event) => {
+  addressCopyButton.addEventListener("click", () => {
+    const address = addressSelect
+      .querySelector("option:checked")
+      .innerHTML.split("(")[0]
+      .trim();
+    navigator.clipboard.writeText(address);
+  });
+
+  deployForm.addEventListener('submit', (event) => {
     event.preventDefault();
 
+    const constructorInputValues = Array.from(event.target.querySelectorAll(".contract__constructor .constructor__input")).map(input => input.value);
+
+
+    console.log("deploy clicked - solFile --- ", solFilesSelect.value);
+    console.log("deploy clicked - contractSelect --- ", contractSelect.value);
+    console.log("deploy clicked - constructorInputValues --- ", constructorInputValues);
+    console.log("deploy clicked - fromPrivateKey --- ", addressSelect.value);
+
+    vscode.postMessage({
+      type: "deploy",
+      value: {
+        solFile: solFilesSelect.value,
+        contractSelect: contractSelect.value,
+        constructorInputValues: constructorInputValues,
+        fromPrivateKey: addressSelect.value
+      },
+    });
     vscode.postMessage({
       type: "send",
       value: {
@@ -67,32 +91,6 @@
         value: ethInput.value,
         to: toInput.value,
       },
-    });
-  });
-
-  addressCopyButton.addEventListener("click", () => {
-    const address = addressSelect
-      .querySelector("option:checked")
-      .innerHTML.split("(")[0]
-      .trim();
-    navigator.clipboard.writeText(address);
-  });
-
-  deployButton.addEventListener("click", () => {
-    vscode.postMessage({
-      type: "deploy",
-      value: {
-        solFile: solFilesSelect.value,
-        contractSelect: contractSelect.value,
-      },
-    });
-    vscode.postMessage({ //TODO
-      type: "send",
-      value: {
-        data: compiledByteCode,
-        fromPrivateKey: addressSelect.value,
-        value: 0,
-      }
     });
   });
 

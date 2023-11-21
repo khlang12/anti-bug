@@ -3,12 +3,15 @@ import { promises as fsPromises } from 'fs';
 import * as ejs from "ejs";
 import * as path from "path";
 import * as vscode from "vscode";
+import Web3 from 'web3';
 import * as ethers from "ethers";
+import * as util from 'util';
 import {
   BlobEIP4844Transaction,
   FeeMarketEIP1559Transaction,
   LegacyTransaction,
 } from "@ethereumjs/tx";
+import AntibugChain from "../blockchain/blockchain";
 import AntibugNode from "../blockchain/node";
 import { bigIntToHex, bytesToHex, hexToBytes } from "@ethereumjs/util";
 import { privateKeyToAddress } from "../util";
@@ -16,7 +19,8 @@ import { exec } from "child_process";
 import { DEFAULT_ACCOUNTS } from "../util/config";
 import { ViewProvider, WebviewProvider } from "../provider/view-provider";
 import { Context } from "mocha";
-// import { deployPanel as importedDeployPanel, securityPanel as importedSecurityPanel } from "../extension";
+import { Wallet } from "ethers";
+
 
 let deployPanel: vscode.WebviewPanel | undefined;
 let contractBytecode: any;
@@ -222,9 +226,11 @@ export default async function interactionListener(
 
     case "deploy": {
       console.log("js -> interaction.ts - deploy 실행중...");
-      const { solFile, contractSelect } = event.value;
+      const { solFile, contractSelect, constructorInputValues, fromPrivateKey } = event.value;
       console.log("js -> interaction.ts - deploy - solFile --- ", solFile);
       console.log("js -> interaction.ts - deploy - contractSelect --- ", contractSelect);
+      console.log("js -> interaction.ts - deploy - contructorInputs --- ", constructorInputValues);
+      console.log("js -> interaction.ts - deploy - fromPrivateKey --- ", fromPrivateKey);
       console.log("js -> interaction.ts - deploy - contractData --- ", contractData);
       console.log("js -> interaction.ts - deploy - contractBytecode --- ", contractBytecode);
       try {
@@ -244,6 +250,32 @@ export default async function interactionListener(
           }
         }
         console.log("interaction.ts - deploy - contractList --- ", contractList);
+
+        // 추가하고 있는 중
+        const node = await AntibugNode.create(fromPrivateKey);
+        console.log("node --- ", util.inspect(node, {depth: 3}));
+
+        const contractFactory = new ethers.ContractFactory(contractList[0].newABIs, contractBytecode, fromPrivateKey);
+        console.log("contractFactory --- ", contractFactory);
+
+        const convertedInputValues = constructorInputValues.map((value: string) => ethers.BigNumber.from(value));
+        console.log("convertedInputValues --- ", convertedInputValues);
+
+        const deployedContract = await contractFactory.deploy(...convertedInputValues);
+        console.log("deployedContract --- ", deployedContract);
+
+        await deployedContract.deployTransaction.wait();
+
+        const deployedAddress = deployedContract.address;
+        console.log("js -> interaction.ts - deploy - deployedAddress --- ", deployedAddress);
+
+        const genesisBlock = await node.vm.blockchain.getBlock(0);
+        const deployedBlock = await node.vm.blockchain.getBlock(1);
+        const deployedAntibugChain = new AntibugChain({ common: node.common, genesisBlock });
+        deployedAntibugChain.putBlock(deployedBlock);
+
+        // 여기까지
+
         this.view.webview.postMessage({
           type: "compiled",
           value: {
@@ -277,10 +309,32 @@ function makeABIEncode(abis: any) {
 }
 
 // 이더리움 docs에서 어떻게 붙이는지 인자마다 32바이트 인코딩
-function encodeCallData(signature: string, name: string, args: any[]) {
-  const iface = new ethers.utils.Interface([signature]);  // 이거 찾아보기 // 결과가 이상해도 에러로 안 뜸
-  const data = iface.encodeFunctionData(name, args);
-  return data;
+// function encodeCallData(signature: string, name: string, args: any[]) {
+//   const iface = new ethers.utils.Interface([signature]);
+//   const data = iface.encodeFunctionData(name, args);
+//   return data;
+// }
+
+function encodeCallData(signature: string, name: string, args: any[]): string {
+  console.log("interaction.ts - encodeCallData 실행중...");
+  const web3 = new Web3();
+
+  const functionSignature: string = web3.eth.abi.encodeFunctionSignature(signature);
+  console.log("interaction.ts - encodeCallData - functionSignature ---", functionSignature);
+  const functionData: string = web3.eth.abi.encodeFunctionCall(
+    {
+      name: name,
+      type: 'function',
+      inputs: args,
+    },
+    args
+  );
+  console.log("interaction.ts - encodeCallData - functionData ---", functionData);
+
+  const encodedData: string = functionSignature + functionData;
+  console.log("interaction.ts - encodeCallData - encodedData ---", encodedData);
+
+  return encodedData;
 }
 
 
