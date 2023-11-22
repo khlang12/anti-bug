@@ -224,13 +224,14 @@ export default async function interactionListener(
 
     case "deploy": {
       console.log("js -> interaction.ts - deploy 실행중...");
-      const { solFile, contractSelect, constructorInputValues, fromPrivateKey, gasLimit, value } = event.value;
+      const { solFile, contractSelect, constructorInputValues, fromPrivateKey, gasLimit, value, unit } = event.value;
       console.log("js -> interaction.ts - deploy - solFile --- ", solFile);
       console.log("js -> interaction.ts - deploy - contractSelect --- ", contractSelect);
       console.log("js -> interaction.ts - deploy - contructorInputs --- ", constructorInputValues);
       console.log("js -> interaction.ts - deploy - fromPrivateKey --- ", fromPrivateKey);
       console.log("js -> interaction.ts - deploy - gasLimit --- ", gasLimit);
       console.log("js -> interaction.ts - deploy - value --- ", value);
+      console.log("js -> interaction.ts - deploy - unit --- ", unit);
       console.log("js -> interaction.ts - deploy - contractData --- ", contractData);
       console.log("js -> interaction.ts - deploy - contractBytecode --- ", contractBytecode);
       try {
@@ -263,24 +264,38 @@ export default async function interactionListener(
         const contractFactory = new ethers.ContractFactory(newABIs, contractBytecode, signer);
         console.log("interaction.ts - deploy - contractFactory --- ", contractFactory);
 
-        const convertedInputValues = constructorInputValues.map((value: string) => ethers.BigNumber.from(value));
+        const convertedInputValues = constructorInputValues.map((value: string) => ethers.BigNumber.from(value)._hex);
         console.log("interaction.ts - deploy - convertedInputValues --- ", convertedInputValues);
+
+        let valueInWei;
+        switch (unit) {
+          case "eth":
+            valueInWei = ethers.utils.parseEther(value.toString());
+            break;
+          case "finney":
+            valueInWei = ethers.utils.parseUnits(value.toString(), "finney");
+            break;
+          case "gwei":
+            valueInWei = ethers.utils.parseUnits(value.toString(), "gwei");
+            break;
+          case "wei":
+          default:
+            valueInWei = ethers.BigNumber.from(value);
+            break;
+        }
 
         const tx = {
           gasLimit: ethers.BigNumber.from(gasLimit),
-          value: ethers.utils.parseEther(value.toString()),
+          value: valueInWei,
         };
         console.log("interaction.ts - deploy - tx --- ", tx);
-
 
         const deployedContract = await contractFactory.deploy(...convertedInputValues, tx);
         console.log("interaction.ts - deploy - deployedContract --- ", deployedContract);
 
-        await deployedContract.deployTransaction.wait();
-
-        console.log(`${contractName} deploy success`);
-        console.log(`contractAddress : ${deployedContract.address}`);
-
+        const receipt = await deployedContract.deployTransaction.wait();
+        console.log("interaction.ts - deploy - receipt --- ", receipt);
+        
         const deployingAccountAddress = await signer.getAddress();
         const deployingAccountBalance = await provider.getBalance(deployingAccountAddress);
         console.log(`Deploying account (${deployingAccountAddress}) balance: ${deployingAccountBalance.toString()}`);

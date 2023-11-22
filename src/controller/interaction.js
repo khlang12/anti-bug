@@ -5,6 +5,7 @@
   const gasLimit = document.querySelector(".send-eth__gas");
   const toInput = document.querySelector(".send-eth__to");
   const ethInput = document.querySelector(".send-eth__eth");
+  const unitInput = document.querySelector(".send-eth__unit");
 
   const deployForm = document.querySelector('.contract__deploy-form');
   const deployButton = document.querySelector(".contract__deploy");
@@ -29,6 +30,8 @@
   //TODO: Refactor
   compileButton.addEventListener("click", () => {
     deployButton.setAttribute("disabled", "disabled");
+    ethInput.setAttribute("disabled", "disabled");
+    unitInput.setAttribute("disabled", "disabled");
     vscode.postMessage({
       type: "compile",
       value: {
@@ -39,6 +42,8 @@
 
   solFilesSelect.addEventListener("change", () => {
     deployButton.setAttribute("disabled", "disabled");
+    ethInput.setAttribute("disabled", "disabled");
+    unitInput.setAttribute("disabled", "disabled");
     contractSelect.innerHTML = '';
     while (contractConstructor.firstChild) {
       contractConstructor.removeChild(contractConstructor.firstChild);
@@ -65,7 +70,6 @@
 
     const constructorInputValues = Array.from(event.target.querySelectorAll(".contract__constructor .constructor__input")).map(input => input.value);
 
-
     console.log("deploy clicked - solFile --- ", solFilesSelect.value);
     console.log("deploy clicked - contractSelect --- ", contractSelect.value);
     console.log("deploy clicked - constructorInputValues --- ", constructorInputValues);
@@ -81,7 +85,8 @@
         constructorInputValues: constructorInputValues,
         fromPrivateKey: addressSelect.value,
         gasLimit: gasLimit.value,
-        value: ethInput.value
+        value: ethInput.value,
+        unit: unitInput.value
       },
     });
     vscode.postMessage({
@@ -115,7 +120,7 @@
           ({ address, privateKey, balance }) => {
             const option = document.createElement("option");
             option.value = privateKey;
-            option.innerHTML = `${address} (${balance} ETH)`;
+            option.innerHTML = `${address} (${balance} Wei)`;
             return option;
           }
         );
@@ -192,111 +197,75 @@
           contractSelect.appendChild(option);
         });
 
-        // 아래 코드와 중복
-        while (contractConstructor.firstChild) {
-          contractConstructor.removeChild(contractConstructor.firstChild);
-        }
+        function updateContractConstructor(selectedContractName, contractData) {
 
-        const selectedContractName = contractSelect.value;
-        const selectedContractAbi = contractData[selectedContractName].abis;
-        const constructorAbi = selectedContractAbi.find((item) => item.type === "constructor");
-
-        console.log("select contract - name - ", selectedContractName);
-        console.log("select contract - abis - ", selectedContractAbi);
-        console.log("select contract - constructor - ", constructorAbi);
-
-        if (constructorAbi && constructorAbi.inputs) {
-          const constructorHead = document.createElement("p");
-          constructorHead.innerHTML = "Constructor";
-          constructorHead.classList.add("head");
-          contractConstructor.append(constructorHead);
-
-          constructorAbi.inputs.forEach((input) => {
-            const constructorElement = document.createElement("div");
-            constructorElement.classList.add("constructor");
-
-            const constructorName = document.createElement("div");
-            constructorName.classList.add("constructor__name");
-            constructorName.innerHTML = `${input.name}`;
-
-            const constructorInput = document.createElement("input");
-            constructorInput.type = "text";
-            constructorInput.placeholder = `${input.type}`;
-            constructorInput.classList.add("constructor__input");
-
-            constructorElement.appendChild(constructorName);
-            constructorElement.appendChild(constructorInput);
-
-            contractConstructor.appendChild(constructorElement);
-          });
-
-          const constructorInputs = document.querySelectorAll(".constructor__input");
-          constructorInputs.forEach(constructorInput => {
-            constructorInput.addEventListener("input", () => {
-              updateDeployButton();
-            });
-          });
-
-          function updateDeployButton() {
-            const isAnyInputEmpty = Array.from(constructorInputs).some(input => input.value.trim() === "");
-            deployButton.disabled = isAnyInputEmpty;
-            console.log("isAnyInputEmpty --- ", isAnyInputEmpty);
-          }
-        } else {
-          deployButton.disabled = false;
-        }
-
-        // 위 코드와 중복
-        contractSelect.addEventListener("change", () => {
-          deployButton.setAttribute("disabled", "disabled");
-          console.log("select contract - ", contractSelect.value);
-
+          const selectedContractAbi = contractData[selectedContractName].abis;
+          const constructorAbi = selectedContractAbi.find((item) => item.type === "constructor");
+        
+          console.log("select contract - name - ", selectedContractName);
+          console.log("select contract - abis - ", selectedContractAbi);
+          console.log("select contract - constructor - ", constructorAbi); 
+        
           while (contractConstructor.firstChild) {
             contractConstructor.removeChild(contractConstructor.firstChild);
           }
-
-          const selectedContractName = contractSelect.value;
-          const selectedContractAbi = contractData[selectedContractName].abis;
-          const constructorAbi = selectedContractAbi.find((item) => item.type === "constructor");
-
-          console.log("select contract - name - ", selectedContractName);
-          console.log("select contract - abis - ", selectedContractAbi);
-          console.log("select contract - constructor - ", constructorAbi);
-
+        
           if (constructorAbi && constructorAbi.inputs) {
+            const constructorHead = document.createElement("p");
+            constructorHead.innerHTML = "Constructor";
+            constructorHead.classList.add("head");
+            contractConstructor.append(constructorHead);
+        
             constructorAbi.inputs.forEach((input) => {
               const constructorElement = document.createElement("div");
               constructorElement.classList.add("constructor");
-
+        
               const constructorName = document.createElement("div");
               constructorName.classList.add("constructor__name");
               constructorName.innerHTML = `${input.name}`;
-
+        
               const constructorInput = document.createElement("input");
               constructorInput.type = "text";
               constructorInput.placeholder = `${input.type}`;
               constructorInput.classList.add("constructor__input");
-
+        
               constructorElement.appendChild(constructorName);
               constructorElement.appendChild(constructorInput);
-
+        
               contractConstructor.appendChild(constructorElement);
             });
-
+            console.log("stateMutability: ", constructorAbi.stateMutability);
+        
+            if (constructorAbi.stateMutability === "payable") {
+              ethInput.disabled = false;
+              unitInput.disabled = false;
+            }
             const constructorInputs = document.querySelectorAll(".constructor__input");
-            constructorInputs.forEach(input => {
-              input.addEventListener("input", () => {
+            constructorInputs.forEach(constructorInput => {
+              constructorInput.addEventListener("input", () => {
                 updateDeployButton();
               });
             });
-
+        
             function updateDeployButton() {
               const isAnyInputEmpty = Array.from(constructorInputs).some(input => input.value.trim() === "");
               deployButton.disabled = isAnyInputEmpty;
+              console.log("isAnyInputEmpty --- ", isAnyInputEmpty);
             }
           } else {
             deployButton.disabled = false;
           }
+        }
+
+        updateContractConstructor(contractNameList[0], contractData);
+
+        contractSelect.addEventListener("change", () => {
+          deployButton.setAttribute("disabled", "disabled");
+          ethInput.setAttribute("disabled", "disabled");
+          unitInput.setAttribute("disabled", "disabled");
+          console.log("select contract - ", contractSelect.value);
+
+          updateContractConstructor(contractSelect.value, contractData);
         });
 
         break;
@@ -313,27 +282,31 @@
         let abiButton = document.getElementById("abiButton");
         let bytecodesButton = document.getElementById("bytecodesButton");
 
-        if (!abiButton) {
-          abiButton = document.createElement("div");
-          abiButton.innerHTML = `
-            <div type="button" class="compile__copy" id="abiButton">
-            <i class="far fa-copy"></i>ABI
-            </div>`;
-          abiButton = abiButton.firstElementChild;
+        if (abiButton) {
+          abiButton.remove();
         }
+        abiButton = document.createElement("div");
+        abiButton.innerHTML = `
+          <div type="button" class="compile__copy" id="abiButton">
+          <i class="far fa-copy"></i>ABI
+          </div>`;
+        abiButton = abiButton.firstElementChild;
+
         abiButton.addEventListener("click", () => {
           copyToClipboard(JSON.stringify(abis));
           console.log("Copy abis");
         });
 
-        if (!bytecodesButton) {
-          bytecodesButton = document.createElement("div");
-          bytecodesButton.innerHTML = `
-            <div type="button" class="compile__copy" id="bytecodesButton">
-            <i class="far fa-copy"></i>Bytecode
-            </div>`;
-          bytecodesButton = bytecodesButton.firstElementChild;
+        if (bytecodesButton) {
+          bytecodesButton.remove();
         }
+        bytecodesButton = document.createElement("div");
+        bytecodesButton.innerHTML = `
+          <div type="button" class="compile__copy" id="bytecodesButton">
+          <i class="far fa-copy"></i>Bytecode
+          </div>`;
+        bytecodesButton = bytecodesButton.firstElementChild;
+
         bytecodesButton.addEventListener("click", () => {
           copyToClipboard(bytecodes);
           console.log("Copy bytecodes");
@@ -380,3 +353,4 @@ function copyToClipboard(value) {
   document.execCommand("copy");
   document.body.removeChild(textarea);
 }
+
