@@ -66,6 +66,18 @@ export default async function interactionListener(
       break;
     }
 
+    case "solFileOpen": {
+      console.log("js -> interaction.ts - solFileOpen 실행중...");
+      const { solFile } = event.value;
+
+      const uri = vscode.Uri.file(solFile);
+      vscode.workspace.openTextDocument(uri).then(doc => {
+        vscode.window.showTextDocument(doc);
+      });
+
+      break;
+    }
+
     case "send": {
       const {
         data,
@@ -295,7 +307,7 @@ export default async function interactionListener(
 
         const receipt = await deployedContract.deployTransaction.wait();
         console.log("interaction.ts - deploy - receipt --- ", receipt);
-        
+
         const deployingAccountAddress = await signer.getAddress();
         const deployingAccountBalance = await provider.getBalance(deployingAccountAddress);
         console.log(`Deploying account (${deployingAccountAddress}) balance: ${deployingAccountBalance.toString()}`);

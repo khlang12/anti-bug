@@ -48,6 +48,12 @@
     while (contractConstructor.firstChild) {
       contractConstructor.removeChild(contractConstructor.firstChild);
     }
+    vscode.postMessage({
+      type: "solFileOpen",
+      value: {
+        solFile: solFilesSelect.value
+      }
+    });
   });
 
   ethInput.addEventListener("input", () => {
