@@ -131,12 +131,20 @@
             text-align: right;
         }
 
+
         .function button {
             border-radius: 5px;
+            width: 50%;
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
         .function input {
-            padding: 6px
+            padding: 6px;
+            width: 50%;
+            height: 55%;
         }
 
         .function__action {
@@ -149,7 +157,7 @@
 
         .function__action-single input {
             position: relative;
-            width: 100%;
+            width: 46%;
             height: 100%;
             border-radius: 5px;
             font-size: smaller;
