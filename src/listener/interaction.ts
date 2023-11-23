@@ -224,8 +224,9 @@ export default async function interactionListener(
               }
             });
 
-          } catch (err) {
-            console.error(`Error reading JSON file: ${err}`);
+          } catch (error) {
+            console.log(error);
+            vscode.window.showErrorMessage("Deploying error: ", String(error));
           }
         });
       } catch (e) {
@@ -240,91 +241,124 @@ export default async function interactionListener(
       console.log("js -> interaction.ts - deploy - solFile --- ", solFile);
       console.log("js -> interaction.ts - deploy - contractSelect --- ", contractSelect);
       console.log("js -> interaction.ts - deploy - contructorInputs --- ", constructorInputValues);
-      console.log("js -> interaction.ts - deploy - fromPrivateKey --- ", fromPrivateKey);
+      console.log("js -> interaction.ts - deploy - addressSelect --- ", fromPrivateKey);
       console.log("js -> interaction.ts - deploy - gasLimit --- ", gasLimit);
       console.log("js -> interaction.ts - deploy - value --- ", value);
       console.log("js -> interaction.ts - deploy - unit --- ", unit);
       console.log("js -> interaction.ts - deploy - contractData --- ", contractData);
       console.log("js -> interaction.ts - deploy - contractBytecode --- ", contractBytecode);
-      try {
-        let contractList = [];
-        for (const contractName in contractData) {
-          if (contractData.hasOwnProperty(contractName)) {
-            if (contractName === contractSelect) {
-              const contractInfo = contractData[contractName];
-              const { abis, bytecodes } = contractInfo;
-              const contract = contractName;
-              contractData[contractName] = { abis, bytecodes, contract };
 
-              const newABIs = makeABIEncode(contractData[contractName].abis);
-              contractBytecode = contractData[contractName].bytecodes;
-              contractList.push({ contractName, newABIs });
+      try {
+        await vscode.window.withProgress({
+          location: vscode.ProgressLocation.Notification,
+          title: "Deploying contract...",
+          cancellable: false
+        }, async (progress) => {
+          progress.report({ increment: 10, message: "Preparing to deploy..." });
+
+          let contractList = [];
+          for (const contractName in contractData) {
+            if (contractData.hasOwnProperty(contractName)) {
+              if (contractName === contractSelect) {
+                const contractInfo = contractData[contractName];
+                const { abis, bytecodes } = contractInfo;
+                const contract = contractName;
+                contractData[contractName] = { abis, bytecodes, contract };
+
+                const newABIs = makeABIEncode(contractData[contractName].abis);
+                contractBytecode = contractData[contractName].bytecodes;
+                contractList.push({ contractName, newABIs });
+              }
             }
           }
-        }
-        console.log("interaction.ts - deploy - contractList --- ", contractList);
+          progress.report({ increment: 30, message: "Compiling contract..." });
 
-        const provider = new JsonRpcProvider('http://127.0.0.1:8545');
-        console.log("interaction.ts - deploy - provider --- ", provider);
+          console.log("interaction.ts - deploy - contractList --- ", contractList);
 
-        const signer: Signer = new Wallet(fromPrivateKey, provider);
-        console.log("interaction.ts - deploy - signer --- ", signer);
+          const provider = new JsonRpcProvider('http://127.0.0.1:8545');
+          console.log("interaction.ts - deploy - provider --- ", provider);
+          const signer: Signer = new Wallet(fromPrivateKey, provider);
+          console.log("interaction.ts - deploy - signer --- ", signer);
+          const selectedContract = contractList[0];
+          const { contractName, newABIs } = selectedContract;
+          const contractFactory = new ethers.ContractFactory(newABIs, contractBytecode, signer);
+          console.log("interaction.ts - deploy - contractFactory --- ", contractFactory);
+          const convertedInputValues = constructorInputValues.map((value: string) => ethers.BigNumber.from(value)._hex);
+          console.log("interaction.ts - deploy - convertedInputValues --- ", convertedInputValues);
 
-        const selectedContract = contractList[0];
-        const { contractName, newABIs } = selectedContract;
+          progress.report({ increment: 50, message: "Deploying contract..." });
 
-        const contractFactory = new ethers.ContractFactory(newABIs, contractBytecode, signer);
-        console.log("interaction.ts - deploy - contractFactory --- ", contractFactory);
-
-        const convertedInputValues = constructorInputValues.map((value: string) => ethers.BigNumber.from(value)._hex);
-        console.log("interaction.ts - deploy - convertedInputValues --- ", convertedInputValues);
-
-        let valueInWei;
-        switch (unit) {
-          case "eth":
-            valueInWei = ethers.utils.parseEther(value.toString());
-            break;
-          case "finney":
-            valueInWei = ethers.utils.parseUnits(value.toString(), "finney");
-            break;
-          case "gwei":
-            valueInWei = ethers.utils.parseUnits(value.toString(), "gwei");
-            break;
-          case "wei":
-          default:
-            valueInWei = ethers.BigNumber.from(value);
-            break;
-        }
-
-        const tx = {
-          gasLimit: ethers.BigNumber.from(gasLimit),
-          value: valueInWei,
-        };
-        console.log("interaction.ts - deploy - tx --- ", tx);
-
-        const deployedContract = await contractFactory.deploy(...convertedInputValues, tx);
-        console.log("interaction.ts - deploy - deployedContract --- ", deployedContract);
-
-        const receipt = await deployedContract.deployTransaction.wait();
-        console.log("interaction.ts - deploy - receipt --- ", receipt);
-
-        const deployingAccountAddress = await signer.getAddress();
-        const deployingAccountBalance = await provider.getBalance(deployingAccountAddress);
-        console.log(`Deploying account (${deployingAccountAddress}) balance: ${deployingAccountBalance.toString()}`);
-
-
-        this.view.webview.postMessage({
-          type: "compiled",
-          value: {
-            solFile: solFile,
-            abis: contractData,
-            bytecodes: contractBytecode,
-            contract: contractList,
+          let valueInWei;
+          switch (unit) {
+            case "eth":
+              valueInWei = ethers.utils.parseEther(value.toString());
+              break;
+            case "finney":
+              valueInWei = ethers.utils.parseUnits(value.toString(), "finney");
+              break;
+            case "gwei":
+              valueInWei = ethers.utils.parseUnits(value.toString(), "gwei");
+              break;
+            case "wei":
+            default:
+              valueInWei = ethers.BigNumber.from(value);
+              break;
           }
+
+          const tx = {
+            gasLimit: ethers.BigNumber.from(gasLimit),
+            value: valueInWei,
+          };
+          console.log("interaction.ts - deploy - tx --- ", tx);
+
+          const deployedContract = await contractFactory.deploy(...convertedInputValues, tx);
+          console.log("interaction.ts - deploy - deployedContract --- ", deployedContract);
+
+          const receipt = await deployedContract.deployTransaction.wait();
+          console.log("interaction.ts - deploy - receipt --- ", receipt);
+
+          const deployingAccountAddress = await signer.getAddress();
+          const deployingAccountBalance = await provider.getBalance(deployingAccountAddress);
+          console.log(`Deploying account (${deployingAccountAddress}) balance: ${deployingAccountBalance.toString()}`);
+
+          progress.report({ increment: 100, message: "Contract deployed successfully!" });
+          vscode.window.showInformationMessage(`
+            status: Transaction mined and execution succeed
+            transaction hash: ${receipt.transactionHash} \n
+            block hash: ${receipt.blockHash} \n
+            block number: ${receipt.blockNumber} \n
+            contract address: ${receipt.contractAddress} \n
+            from: ${receipt.from} \n
+            gas: ${receipt.gasUsed}
+          `);
+
+          // open Webview
+          openPanel(
+            "deployPanel",
+            "Deploy Result",
+            "src/pages/deploy_result.ejs",
+            {
+              solFile: solFile,
+              abis: contractData,
+              bytecodes: contractBytecode,
+              contract: contractList,
+              contractAddress: receipt.contractAddress
+            });
+
+          // balance update
+          this.view.webview.postMessage({
+            type: "balanceUpdate",
+            value: {
+              from: deployingAccountAddress,
+              fromBalance: deployingAccountBalance.toString(),
+            }
+          });
         });
-      } catch (e) {
-        console.log(e);
+      } catch (error) {
+        console.log(error);
+        vscode.window.showErrorMessage("Deploying error: ", String(error));
       }
+      break;
     }
   }
 }
@@ -413,6 +447,7 @@ async function openPanel(
     const abis = value.abis;
     const bytecodes = value.bytecodes;
     const contract = value.contract;
+    const contractAddress = value.contractAddress;
 
     console.log("openPanel - solFile --- ", solFile);
     console.log("openPanel - abis -—- ", abis);
@@ -421,7 +456,7 @@ async function openPanel(
 
     deployPanel.webview.postMessage({
       type: "deployResult",
-      value: { solFile: solFile, abis: abis, bytecodes: bytecodes, contract: contract },
+      value: { solFile: solFile, abis: abis, bytecodes: bytecodes, contract: contract, contractAddress: contractAddress },
     });
 
     deployPanel.onDidDispose(() => {

@@ -81,12 +81,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (message === "deployResult") {
 
             console.log("deploy_result.ejs - ", message, " 실행중…");
-            const { solFile, abis, bytecodes, contract } = event.data.value;
+            const { solFile, abis, bytecodes, contract, contractAddress } = event.data.value;
 
             console.log("interaction.ts -> deploy_result.ejs - ", message, " solFile --- ", solFile);
             console.log("interaction.ts -> deploy_result.ejs - ", message, " abis --- ", abis);
             console.log("interaction.ts -> deploy_result.ejs - ", message, " bytecodes --- ", bytecodes);
             console.log("interaction.ts -> deploy_result.ejs - ", message, " contract --- ", contract);
+            console.log("interaction.ts -> deploy_result.ejs - ", message, " contractAddress --- ", contractAddress);
 
             // test하려고 위에 뽑은 거
             // const test = document.getElementById('test-abis');
@@ -112,8 +113,14 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                     const contractTitleElement = document.createElement("div");
                     contractTitleElement.classList.add("contract__title");
+
+                    const contractNameAddressElement = document.createElement("div");
+                    contractNameAddressElement.classList.add("contract__name-address");
                     const contractNameElement = document.createElement("p");
                     contractNameElement.classList.add("contract__name");
+                    const contractAddressElement = document.createElement("p");
+                    contractAddressElement.classList.add("contract__address");
+
                     const contractChevronDownButtonElement = makeChevronDownButtonElement();
                     contractChevronDownButtonElement.classList.add("contract__icon");
                     const deleteButtonElement = makeDeleteButtonElement();
@@ -123,9 +130,13 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                     contractElement.appendChild(contractTitleElement);
                     contractTitleElement.appendChild(deleteButtonElement);
-                    contractTitleElement.appendChild(contractNameElement);
+
                     contractNameElement.innerHTML = `${contractName} - ${solFileName}`;
-                    contractTitleElement.appendChild(contractNameElement);
+                    contractAddressElement.innerHTML = `${contractAddress}`;
+                    contractNameAddressElement.appendChild(contractNameElement);
+                    contractNameAddressElement.appendChild(contractAddressElement);
+                    
+                    contractTitleElement.appendChild(contractNameAddressElement);
                     contractTitleElement.appendChild(contractChevronDownButtonElement);
 
                     contractChevronDownButtonElement.addEventListener("click", () => {

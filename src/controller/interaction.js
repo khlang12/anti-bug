@@ -95,18 +95,18 @@
         unit: unitInput.value,
       },
     });
-    vscode.postMessage({
-      type: "send",
-      value: {
-        data: compiledByteCode,
-        // callData,
-        // maxFeePergas,
-        gasLimit: gasLimit.value,
-        fromPrivateKey: addressSelect.value,
-        value: ethInput.value,
-        to: toInput.value,
-      },
-    });
+    // vscode.postMessage({
+    //   type: "send",
+    //   value: {
+    //     data: compiledByteCode,
+    //     // callData,
+    //     // maxFeePergas,
+    //     gasLimit: gasLimit.value,
+    //     fromPrivateKey: addressSelect.value,
+    //     value: ethInput.value,
+    //     to: toInput.value,
+    //   },
+    // });
   });
 
   window.addEventListener("message", ({ data }) => {
@@ -135,55 +135,6 @@
         break;
       }
 
-      case "receipt": {  // send 반영하여 addressSelect 업데이트만 구현됨 receipt 띄워야해
-        const {
-          accounts,
-          contractAddress,
-          exectResult,
-          totalGasSpent,
-          amountSpent,
-        } = data.value;
-        const { from, to, fromBalance, toBalance } = accounts;
-        const options = addressSelect.querySelectorAll("option");
-
-        console.log("interaction.js - receipt - from --- ", from);
-        console.log("interaction.js - receipt - to --- ", to);
-        console.log("interaction.js - receipt - fromBalance --- ", fromBalance);
-        console.log("interaction.js - receipt - toBalance --- ", toBalance);
-        console.log("interaction.js - receipt - exectResult --- ", exectResult);
-        console.log("interaction.js - receipt - totalGasSpent --- ", totalGasSpent);
-        console.log("interaction.js - receipt - amountSpent --- ", amountSpent);
-
-
-        const fromOption = [...options].find((option) =>
-          option.innerHTML.includes(from)
-        );
-        const newFromOption = document.createElement("option");
-        newFromOption.value = fromOption.value;
-        newFromOption.innerHTML = `${from} (${fromBalance})`;
-        newFromOption.selected = true;
-        addressSelect.replaceChild(newFromOption, fromOption);
-
-        if (to) {
-          const toOption = [...options].find((option) =>
-            option.innerHTML.includes(to)
-          );
-          const newToOption = document.createElement("option");
-          newToOption.value = toOption.value;
-          newToOption.innerHTML = `${to} (${toBalance})`;
-          addressSelect.replaceChild(newToOption, toOption);
-        }
-
-        if (contractAddress) {
-          contractAddressText.innerHTML = contractAddress;
-        }
-
-        console.log("interaction.js - receipt - contractAddress --- ", contractAddress);
-
-
-        break;
-      }
-
       case "contractSelect": {
         console.log("ts -> interaction.js - contractSelect 실행중...");
 
@@ -207,41 +158,41 @@
 
           const selectedContractAbi = contractData[selectedContractName].abis;
           const constructorAbi = selectedContractAbi.find((item) => item.type === "constructor");
-        
+
           console.log("select contract - name - ", selectedContractName);
           console.log("select contract - abis - ", selectedContractAbi);
-          console.log("select contract - constructor - ", constructorAbi); 
-        
+          console.log("select contract - constructor - ", constructorAbi);
+
           while (contractConstructor.firstChild) {
             contractConstructor.removeChild(contractConstructor.firstChild);
           }
-        
+
           if (constructorAbi && constructorAbi.inputs) {
             const constructorHead = document.createElement("p");
             constructorHead.innerHTML = "Constructor";
             constructorHead.classList.add("head");
             contractConstructor.append(constructorHead);
-        
+
             constructorAbi.inputs.forEach((input) => {
               const constructorElement = document.createElement("div");
               constructorElement.classList.add("constructor");
-        
+
               const constructorName = document.createElement("div");
               constructorName.classList.add("constructor__name");
               constructorName.innerHTML = `${input.name}`;
-        
+
               const constructorInput = document.createElement("input");
               constructorInput.type = "text";
               constructorInput.placeholder = `${input.type}`;
               constructorInput.classList.add("constructor__input");
-        
+
               constructorElement.appendChild(constructorName);
               constructorElement.appendChild(constructorInput);
-        
+
               contractConstructor.appendChild(constructorElement);
             });
             console.log("stateMutability: ", constructorAbi.stateMutability);
-        
+
             if (constructorAbi.stateMutability === "payable") {
               ethInput.disabled = false;
               unitInput.disabled = false;
@@ -252,7 +203,7 @@
                 updateDeployButton();
               });
             });
-        
+
             function updateDeployButton() {
               const isAnyInputEmpty = Array.from(constructorInputs).some(input => input.value.trim() === "");
               deployButton.disabled = isAnyInputEmpty;
@@ -326,26 +277,86 @@
 
       // view , pure 함수는 send 버튼이 아닌 call 버튼으로 호출
 
-      case "compiled": {
-        console.log("ts -> interaction.js - compiled 실행중...");
-        const { solFile, abis, bytecodes, contract } = data.value;
-        console.log("interaction.js - compiled - solFile -—- ", solFile);
-        console.log("interaction.js - compiled - abis -—- ", abis);
-        console.log("interaction.js - compiled - bytecodes --- ", bytecodes);
-        console.log("interaction.js - compiled - contractList --- ", contract);
+      case "receipt": {  // send 반영하여 addressSelect 업데이트만 구현됨 receipt 띄워야해
+        const {
+          accounts,
+          contractAddress,
+          exectResult,
+          totalGasSpent,
+          amountSpent,
+        } = data.value;
+        const { from, to, fromBalance, toBalance } = accounts;
+        const options = addressSelect.querySelectorAll("option");
 
-        vscode.postMessage({
-          type: "webview",
-          value: {
-            panel: "deployPanel",
-            title: "Deploy Result",
-            filePath: "src/pages/deploy_result.ejs",
-            solFile: solFile,
-            abis: abis,
-            bytecodes: bytecodes,
-            contract: contract,
-          }
-        });
+        console.log("interaction.js - receipt - from --- ", from);
+        console.log("interaction.js - receipt - to --- ", to);
+        console.log("interaction.js - receipt - fromBalance --- ", fromBalance);
+        console.log("interaction.js - receipt - toBalance --- ", toBalance);
+        console.log("interaction.js - receipt - exectResult --- ", exectResult);
+        console.log("interaction.js - receipt - totalGasSpent --- ", totalGasSpent);
+        console.log("interaction.js - receipt - amountSpent --- ", amountSpent);
+
+
+        const fromOption = [...options].find((option) =>
+          option.innerHTML.includes(from)
+        );
+        const newFromOption = document.createElement("option");
+        newFromOption.value = fromOption.value;
+        newFromOption.innerHTML = `${from} (${fromBalance})`;
+        newFromOption.selected = true;
+        addressSelect.replaceChild(newFromOption, fromOption);
+
+        if (to) {
+          const toOption = [...options].find((option) =>
+            returnoption.innerHTML.includes(to)
+          );
+          const newToOption = document.createElement("option");
+          newToOption.value = toOption.value;
+          newToOption.innerHTML = `${to} (${toBalance})`;
+          addressSelect.replaceChild(newToOption, toOption);
+        }
+
+        if (contractAddress) {
+          contractAddressText.innerHTML = contractAddress;
+        }
+
+        console.log("interaction.js - receipt - contractAddress --- ", contractAddress);
+
+        break;
+      }
+
+      case "balanceUpdate": {
+        const { from, to, fromBalance, toBalance } = data.value;
+        const options = addressSelect.querySelectorAll("option");
+
+        console.log("interaction.js - balanceUpdate - from --- ", from);
+        console.log("interaction.js - balanceUpdate - to --- ", to);
+        console.log("interaction.js - balanceUpdate - fromBalance --- ", fromBalance);
+        console.log("interaction.js - balanceUpdate - toBalance --- ", toBalance);
+
+
+        const fromOption = [...options].find((option) =>
+          option.innerHTML.toLowerCase().includes(from.toLowerCase())
+        );
+        console.log("interaction.js - balanceUpdate - fromOption --- ", fromOption);
+
+        const newFromOption = document.createElement("option");
+        newFromOption.value = fromOption.value;
+        newFromOption.innerHTML = `${from} (${fromBalance} Wei)`;
+        newFromOption.selected = true;
+        addressSelect.replaceChild(newFromOption, fromOption);
+
+        if (to) {
+          const toOption = [...options].find((option) =>
+            option.innerHTML.toLowerCase().includes(to.toLowerCase())
+          );
+          const newToOption = document.createElement("option");
+          newToOption.value = toOption.value;
+          newToOption.innerHTML = `${to} (${toBalance} Wei)`;
+          addressSelect.replaceChild(newToOption, toOption);
+        }
+
+        break;
       }
     }
   });

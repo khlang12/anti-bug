@@ -61,17 +61,35 @@
             align-items: center;
             justify-content: space-between;
             column-gap: 10px;
-            font-size: 15px;
-            font-weight: bold;
             border-top: 1px solid #e9950c;
             border-bottom: 1px solid #636363;
             padding: 0 15px;
         }
 
-        .contract__name,
-        .contract__icon,
-        .argument__name {
+        .contract__icon {
             color: var(--vscode-peekViewTitleLabel-foreground);
+        }
+
+        .contract__name,
+        .contract__address,
+        .contract__name-address {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            max-width: calc(100% - 5px);
+        }
+
+        .contract__name {
+            font-size: 15px;
+            font-weight: bold;
+            margin: 10px 0 5px 0;
+            color: var(--vscode-peekViewTitleLabel-foreground);
+        }
+
+        .contract__address {
+            font-size: 13px;
+            margin: 0 0 10px 0;
+            color: var(--vscode-peekViewResult-lineForeground);
         }
 
         .contract__actions {
