@@ -92,7 +92,7 @@
         fromPrivateKey: addressSelect.value,
         gasLimit: gasLimit.value,
         value: ethInput.value,
-        unit: unitInput.value
+        unit: unitInput.value,
       },
     });
     vscode.postMessage({
