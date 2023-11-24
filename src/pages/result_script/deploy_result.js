@@ -155,12 +155,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 "hidden"
                             );
 
-                            let argsElement = [];
-
                             const actionElement = document.createElement("button");
                             actionElement.innerHTML = name;
                             actionElement.classList.add(stateMutability, "function__action");
                             functionActionSingleElement.appendChild(actionElement);
+
+                            let argsElement = [];
+                            let functionInput = [];
 
                             if (inputs.length === 1) {
                                 actionElement.disabled = true;
@@ -170,7 +171,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 functionActionSingleElement.appendChild(inputElement);
 
                                 inputElement.addEventListener("input", () => {
-                                    actionElement.disabled = inputElement.value.trim() === '';
+                                    functionInput = [inputElement.value.trim()];
+                                    console.log("Updated functionInput:", functionInput);
+                                    actionElement.disabled = functionInput.some(value => value === "");
                                 });
                             }
 
@@ -189,7 +192,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 argsElement.forEach(argElement => {
                                     const inputElement = argElement.querySelector(".argument__input");
                                     inputElement.addEventListener("input", () => {
-                                        actionElement.disabled = !argsElement.every(arg => arg.querySelector(".argument__input").value.trim() !== "");
+                                        functionInput = argsElement.map(arg => arg.querySelector(".argument__input").value.trim());
+                                        console.log("Updated functionInput:", functionInput);
+                                        actionElement.disabled = functionInput.some(value => value === "");
                                     });
                                 });
                             }
@@ -201,37 +206,36 @@ document.addEventListener("DOMContentLoaded", async function () {
                                 const isNonpayable = actionElement.classList.contains('nonpayable');
 
                                 if (isPayable || isNonpayable) {
-                                    const transactionObject = {
-                                        // to: contractAddressText.innerHTML,
-                                        // from: addressSelect.value,
-                                        // value: ethInput.value, // 이더 전송할 경우에만 설정
-                                    };
-
                                     if (isPayable) {
-                                        // payable function
-                                        console.log("deploy_result.ejs - function button click - classname ---", actionElement.className);
-                                        contract.methods[name](...args).send(transactionObject);
+                                        console.log("deploy_result.ejs - payable 살행중 --- ", actionElement.className, functionInput, actionElement.innerHTML);
+                                        vscode.postMessage({
+                                            type: "sendEvent",
+                                            value: {
+                                                stateMutability: "payable",
+                                                functionName: actionElement.innerHTML,
+                                                functionInput: functionInput,
+                                            }
+                                        });
                                     } else if (isNonpayable) {
-                                        // nonpayable function
-                                        console.log("deploy_result.ejs - function button click - classname ---", actionElement.className);
-                                        contract.methods[name](...args).send(transactionObject);
+                                        console.log("deploy_result.ejs - nonpayable 실행중 --- ", actionElement.className, functionInput, actionElement.innerHTML);
+                                        vscode.postMessage({
+                                            type: "sendEvent",
+                                            value: {
+                                                stateMutability: "nonpayable",
+                                                functionName: actionElement.innerHTML,
+                                                functionInput: functionInput,
+                                            }
+                                        });
                                     }
                                 } else {
-                                    // pure, view function
-                                    console.log("deploy_result.ejs - function button click - classname ---", actionElement.className);
+                                    console.log("deploy_result.ejs - pure,view 실행중 --- ", actionElement.className, functionInput, actionElement.innerHTML);
                                     vscode.postMessage({
-                                        type: "call",
+                                        type: "callEvent",
                                         value: {
-                                            signature,
-                                            args,
-                                            name,
-                                            to: contractAddressText.innerHTML,
-                                            fromPrivateKey: addressSelect.value,
-                                            value: ethInput.value, // TODO
-                                        },
+                                            functionName: actionElement.innerHTML,
+                                            functionInput: functionInput,
+                                        }
                                     });
-                                    const result = contract.methods[name](...args).call();
-                                    console.log("Result of the view/pure function:", result);
                                 }
                             });
 

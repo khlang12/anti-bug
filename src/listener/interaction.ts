@@ -18,8 +18,6 @@ import { DEFAULT_ACCOUNTS } from "../util/config";
 import { ViewProvider, WebviewProvider } from "../provider/view-provider";
 import { JsonRpcProvider } from '@ethersproject/providers';
 
-
-
 let deployPanel: vscode.WebviewPanel | undefined;
 let contractBytecode: any;
 let contractData: Record<string, { abis: any[], bytecodes: string, contract: any }> = {};
@@ -78,67 +76,197 @@ export default async function interactionListener(
       break;
     }
 
-    case "send": {
-      const {
-        data,
-        callData,
-        maxFeePerGas,
-        gasLimit,
-        fromPrivateKey,
-        value,
-        to,
-      } = event.value;
-
-      const latestBlock = antibugNode.getLatestBlock();
-      const estimatedGasLimit = antibugNode.getEstimatedGasLimit(latestBlock);
-      const baseFee = latestBlock.header.calcNextBaseFee();
-
-      const txData = {
-        to,
-        value: bigIntToHex(BigInt(value)),
-        maxFeePerGas: baseFee,
-        gasLimit: estimatedGasLimit,
-        nonce: await antibugNode.getNonce(fromPrivateKey),
-        data,
-      };
-
-      const tx = FeeMarketEIP1559Transaction.fromTxData(txData).sign(
-        hexToBytes(fromPrivateKey)
-      );
-
-      const { receipt } = await antibugNode.mine(tx);
-
-      const from = privateKeyToAddress(fromPrivateKey).toString();
-      const fromBalance = await antibugNode.getBalance(from);
-      const toBalance = to ? await antibugNode.getBalance(to) : 0n;
-
-      console.log("js -> interaction.ts - send 실행중…");
-      console.log("interaction.ts - send - data --- ", data);
-      console.log("interaction.ts - send - callData --- ", callData);
-      console.log("interaction.ts - send - maxFeePerGas --- ", maxFeePerGas);
-      console.log("interaction.ts - send - gasLimit --- ", gasLimit);
-      console.log("interaction.ts - send - fromPrivateKey --- ", fromPrivateKey);
-      console.log("interaction.ts - send - value --- ", value);
-      console.log("interaction.ts - send - to --- ", to);
-
+    case "sendEvent": {
+      console.log("ejs -> interaction.ts - sendEvent 실행중...");
+      const { stateMutability, functionName, functionInput } = event.value;
       this.view.webview.postMessage({
-        type: "receipt",
+        type: "sendOption",
         value: {
-          accounts: {
-            from,
-            to,
-            fromBalance: fromBalance.toString(),
-            toBalance: toBalance.toString(),
-          },
-          contractAddress: receipt.createdAddress?.toString(),
-          exectResult: bytesToHex(receipt.execResult.returnValue),
-          totalGasSpent: receipt.totalGasSpent.toString(),
-          amountSpent: receipt.amountSpent.toString(),
-        },
+          stateMutability: stateMutability,
+          functionInput: functionInput,
+          functionName: functionName
+        }
       });
-
       break;
     }
+
+    // case "send": {
+    //   const {
+    //     data,
+    //     callData,
+    //     maxFeePerGas,
+    //     gasLimit,
+    //     fromPrivateKey,
+    //     value,
+    //     to,
+    //   } = event.value;
+
+    //   // const { stateMutability, inputData } = event.value;
+
+    //   const latestBlock = antibugNode.getLatestBlock();
+    //   const estimatedGasLimit = antibugNode.getEstimatedGasLimit(latestBlock);
+    //   const baseFee = latestBlock.header.calcNextBaseFee();
+
+    //   const txData = {
+    //     to,
+    //     value: bigIntToHex(BigInt(value)),
+    //     maxFeePerGas: baseFee,
+    //     gasLimit: estimatedGasLimit,
+    //     nonce: await antibugNode.getNonce(fromPrivateKey),
+    //     data,
+    //   };
+
+    //   const tx = FeeMarketEIP1559Transaction.fromTxData(txData).sign(
+    //     hexToBytes(fromPrivateKey)
+    //   );
+
+    //   const { receipt } = await antibugNode.mine(tx);
+
+    //   const from = privateKeyToAddress(fromPrivateKey).toString();
+    //   const fromBalance = await antibugNode.getBalance(from);
+    //   const toBalance = to ? await antibugNode.getBalance(to) : 0n;
+
+    //   console.log("js -> interaction.ts - send 실행중…");
+    //   console.log("interaction.ts - send - data --- ", data);
+    //   console.log("interaction.ts - send - callData --- ", callData);
+    //   console.log("interaction.ts - send - maxFeePerGas --- ", maxFeePerGas);
+    //   console.log("interaction.ts - send - gasLimit --- ", gasLimit);
+    //   console.log("interaction.ts - send - fromPrivateKey --- ", fromPrivateKey);
+    //   console.log("interaction.ts - send - value --- ", value);
+    //   console.log("interaction.ts - send - to --- ", to);
+
+    //   this.view.webview.postMessage({
+    //     type: "receipt",
+    //     value: {
+    //       accounts: {
+    //         from,
+    //         to,
+    //         fromBalance: fromBalance.toString(),
+    //         toBalance: toBalance.toString(),
+    //       },
+    //       contractAddress: receipt.createdAddress?.toString(),
+    //       exectResult: bytesToHex(receipt.execResult.returnValue),
+    //       totalGasSpent: receipt.totalGasSpent.toString(),
+    //       amountSpent: receipt.amountSpent.toString(),
+    //     },
+    //   });
+
+    //   break;
+    // }
+
+    case "send": {
+      console.log("js -> interaction.ts - send 실행중...");
+      const { contractName, functionName, functionInput, stateMutability, toAddress, fromPrivateKey, gasLimit, value, unit } = event.value;
+      console.log("js -> interaction.ts - send - contractName --- ", contractName);
+      console.log("js -> interaction.ts - send - functionName --- ", functionName);
+      console.log("js -> interaction.ts - send - functionInputs --- ", functionInput);
+      console.log("js -> interaction.ts - send - stateMutability --- ", stateMutability);      
+      console.log("js -> interaction.ts - send - toAddress --- ", toAddress);
+      console.log("js -> interaction.ts - send - fromPrivateKey --- ", fromPrivateKey);
+      console.log("js -> interaction.ts - send - gasLimit --- ", gasLimit);
+      console.log("js -> interaction.ts - send - value --- ", value);
+      console.log("js -> interaction.ts - send - unit --- ", unit);
+  
+      try {
+          await vscode.window.withProgress({
+              location: vscode.ProgressLocation.Notification,
+              title: "Sending transaction...",
+              cancellable: false
+          }, async (progress) => {
+              progress.report({ increment: 10, message: "Preparing to send..." });
+  
+              // Find selected contract
+              const selectedContract = contractData[contractName];
+              if (!selectedContract) {
+                  vscode.window.showErrorMessage(`Contract "${contractName}" not found.`);
+                  return;
+              }
+  
+              // Find selected function
+              const selectedFunction = selectedContract.abis.find((abi) => abi.name === functionName);
+              if (!selectedFunction) {
+                  vscode.window.showErrorMessage(`Function "${functionName}" not found in contract "${contractName}".`);
+                  return;
+              }
+  
+              // Prepare function arguments
+              const convertedInputs = functionInput.map((input: string) => ethers.BigNumber.from(input)._hex);
+  
+              progress.report({ increment: 30, message: "Preparing transaction..." });
+  
+              const provider = new JsonRpcProvider('http://127.0.0.1:8545');
+              const signer: Signer = new Wallet(fromPrivateKey, provider);
+  
+              let valueInWei;
+              switch (unit) {
+                  case "eth":
+                      valueInWei = ethers.utils.parseEther(value.toString());
+                      break;
+                  case "finney":
+                      valueInWei = ethers.utils.parseUnits(value.toString(), "finney");
+                      break;
+                  case "gwei":
+                      valueInWei = ethers.utils.parseUnits(value.toString(), "gwei");
+                      break;
+                  case "wei":
+                  default:
+                      valueInWei = ethers.BigNumber.from(value);
+                      break;
+              }
+  
+              const tx = {
+                  gasLimit: ethers.BigNumber.from(gasLimit),
+                  value: valueInWei,
+                  to: null
+              };
+  
+              // Add toAddress to the transaction if provided
+              if (toAddress) {
+                  tx["to"] = toAddress;
+              }
+  
+              progress.report({ increment: 50, message: "Sending transaction..." });
+  
+              // Create and send transaction
+              const contractInstance = new ethers.Contract(selectedContract.contract, selectedContract.abis, signer);
+              const transaction = await contractInstance.functions[functionName](...convertedInputs, tx);
+              const receipt = await transaction.wait();
+  
+              const fromAddress = await signer.getAddress();
+              const fromBalance = await provider.getBalance(fromAddress);
+              const toBalance = await provider.getBalance(toAddress);
+              console.log(`From account (${fromAddress}) balance: ${fromBalance.toString()}`);
+              console.log(`To account (${toAddress}) balance: ${toBalance.toString()}`);
+  
+              progress.report({ increment: 100, message: "Transaction sent successfully!" });
+              vscode.window.showInformationMessage(`
+                  status: Transaction mined and execution succeed
+                  transaction hash: ${receipt.transactionHash} \n
+                  block hash: ${receipt.blockHash} \n
+                  block number: ${receipt.blockNumber} \n
+                  from: ${receipt.from} \n
+                  to: ${receipt.to} \n
+                  gas: ${receipt.gasUsed}
+              `);
+  
+              // Update balance
+              this.view.webview.postMessage({
+                  type: "balanceUpdate",
+                  value: {
+                      from: fromAddress,
+                      to: toAddress,
+                      fromBalance: fromBalance.toString(),
+                      toBalance: toBalance.toString()
+                  }
+              });
+          });
+      } catch (error) {
+          console.log(error);
+          vscode.window.showErrorMessage("Sending transaction error: ", String(error));
+      }
+      break;
+  }
+  
 
     case "call": {
       const { signature, name, args, value, fromPrivateKey, to } = event.value;

@@ -74,6 +74,9 @@
   deployForm.addEventListener('submit', (event) => {
     event.preventDefault();
 
+    ethInput.disabled = false;
+    unitInput.disabled = false;
+
     const constructorInputValues = Array.from(event.target.querySelectorAll(".contract__constructor .constructor__input")).map(input => input.value);
 
     console.log("deploy clicked - solFile --- ", solFilesSelect.value);
@@ -95,18 +98,6 @@
         unit: unitInput.value,
       },
     });
-    // vscode.postMessage({
-    //   type: "send",
-    //   value: {
-    //     data: compiledByteCode,
-    //     // callData,
-    //     // maxFeePergas,
-    //     gasLimit: gasLimit.value,
-    //     fromPrivateKey: addressSelect.value,
-    //     value: ethInput.value,
-    //     to: toInput.value,
-    //   },
-    // });
   });
 
   window.addEventListener("message", ({ data }) => {
@@ -269,7 +260,26 @@
         break;
       }
 
-      // view , pure 함수는 send 버튼이 아닌 call 버튼으로 호출
+      case "sendOption": {
+        console.log("ts -> interaction.js - sendOption 실행중...");
+        const { stateMutability, functionInput, functionName } = data.value;
+
+        vscode.postMessage({
+          type: "send",
+          value: {
+            contractName: contractSelect.value,
+            functionName: functionName,
+            functionInput: functionInput,
+            stateMutability: stateMutability,
+            toAddress: toInput.value,
+            fromPrivateKey: addressSelect.value,
+            gasLimit: gasLimit.value,
+            value: ethInput.value,
+            unit: unitInput.value,
+          }
+        });
+        break;
+      }
 
       case "receipt": {  // send 반영하여 addressSelect 업데이트만 구현됨 receipt 띄워야해
         const {
