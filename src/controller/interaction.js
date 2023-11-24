@@ -200,15 +200,9 @@
             const constructorInputs = document.querySelectorAll(".constructor__input");
             constructorInputs.forEach(constructorInput => {
               constructorInput.addEventListener("input", () => {
-                updateDeployButton();
+                deployButton.disabled = Array.from(constructorInputs).some(input => input.value.trim() === "");
               });
             });
-
-            function updateDeployButton() {
-              const isAnyInputEmpty = Array.from(constructorInputs).some(input => input.value.trim() === "");
-              deployButton.disabled = isAnyInputEmpty;
-              console.log("isAnyInputEmpty --- ", isAnyInputEmpty);
-            }
           } else {
             deployButton.disabled = false;
           }

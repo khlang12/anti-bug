@@ -66,7 +66,8 @@
             padding: 0 15px;
         }
 
-        .contract__icon {
+        .contract__icon,
+        .argument__name {
             color: var(--vscode-peekViewTitleLabel-foreground);
         }
 
@@ -139,6 +140,11 @@
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
+            cursor: pointer;
+        }
+
+        .function button:disabled {
+            cursor: default;
         }
 
         .function input {
@@ -155,7 +161,8 @@
             color: var(--vscode-peekViewTitleLabel-foreground);
         }
 
-        .function__action-single input {
+        .function__action-single input,
+        .argument input {
             position: relative;
             width: 46%;
             height: 100%;
@@ -163,7 +170,8 @@
             font-size: smaller;
         }
 
-        .function__action:hover {
+        .function__action:hover,
+        .function__action:disabled {
             background-color: var(--vscode-terminal-ansiGreen);
         }
 
@@ -173,7 +181,9 @@
         }
 
         .function__action.pure:hover,
-        .function__action.view:hover {
+        .function__action.view:hover,
+        .function__action.pure:disabled,
+        .function__action.view:disabled {
             background-color: var(--vscode-terminal-ansiBlue);
         }
 
@@ -181,6 +191,7 @@
             background-color: var(--vscode-terminal-ansiBrightMagenta);
         }
 
-        .function__action.payable:hover {
+        .function__action.payable:hover,
+        .function__action.payable:disabled {
             background-color: var(--vscode-terminal-ansiMagenta);
         }

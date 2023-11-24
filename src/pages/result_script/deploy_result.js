@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             inputNameElement.innerHTML = `${name}`;
 
             const inputElement = document.createElement("input");
+            inputElement.classList.add("argument__input");
             inputElement.placeholder = `${type} `;
 
             argElement.appendChild(inputNameElement);
@@ -69,7 +70,6 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             return argElement;
         });
-
         return argsElements;
     }
 
@@ -88,12 +88,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             console.log("interaction.ts -> deploy_result.ejs - ", message, " bytecodes --- ", bytecodes);
             console.log("interaction.ts -> deploy_result.ejs - ", message, " contract --- ", contract);
             console.log("interaction.ts -> deploy_result.ejs - ", message, " contractAddress --- ", contractAddress);
-
-            // test하려고 위에 뽑은 거
-            // const test = document.getElementById('test-abis');
-            // test.textContent = JSON.stringify(abis, null, 2);
-            // const testtest = document.getElementById('test-bytecodes');
-            // testtest.textContent = bytecodes.toString();
 
             const contractInteractionElements = document.querySelectorAll(".contract__interaction");
 
@@ -135,7 +129,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     contractAddressElement.innerHTML = `${contractAddress}`;
                     contractNameAddressElement.appendChild(contractNameElement);
                     contractNameAddressElement.appendChild(contractAddressElement);
-                    
+
                     contractTitleElement.appendChild(contractNameAddressElement);
                     contractTitleElement.appendChild(contractChevronDownButtonElement);
 
@@ -169,13 +163,19 @@ document.addEventListener("DOMContentLoaded", async function () {
                             functionActionSingleElement.appendChild(actionElement);
 
                             if (inputs.length === 1) {
+                                actionElement.disabled = true;
                                 const inputElement = document.createElement("input");
                                 inputElement.placeholder = `${inputs[0].type}`;
                                 argsElement = [inputElement];
                                 functionActionSingleElement.appendChild(inputElement);
+
+                                inputElement.addEventListener("input", () => {
+                                    actionElement.disabled = inputElement.value.trim() === '';
+                                });
                             }
 
                             if (inputs.length > 1) {
+                                actionElement.disabled = true;
                                 const chevronDownButtonElement = makeChevronDownButtonElement();
                                 chevronDownButtonElement.classList.add("contract__icon");
                                 chevronDownButtonElement.addEventListener("click", () => {
@@ -185,36 +185,40 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                                 argsElement = makeMultiArgsElements(inputs);
                                 functionActionMultiElement.replaceChildren(...argsElement);
+
+                                argsElement.forEach(argElement => {
+                                    const inputElement = argElement.querySelector(".argument__input");
+                                    inputElement.addEventListener("input", () => {
+                                        actionElement.disabled = !argsElement.every(arg => arg.querySelector(".argument__input").value.trim() !== "");
+                                    });
+                                });
                             }
 
                             // function button : stateMutability (call, transact)
                             actionElement.addEventListener("click", () => {
-                                const args = argsElement.map((argElement) => argElement.childNodes[1].value);
-
-                                // 여기서 argsElement를 하나도 못 받아오는데?
-                                console.log("deploy_result.ejs - function button click - argsElement ---", argsElement);
-                                console.log("deploy_result.ejs - function button click - args ---", args);
-                                console.log("deploy_result.ejs - function button click - contractAddressText.innerHTML ---", contractAddressText.innerHTML);
 
                                 const isPayable = actionElement.classList.contains('payable');
                                 const isNonpayable = actionElement.classList.contains('nonpayable');
 
                                 if (isPayable || isNonpayable) {
                                     const transactionObject = {
-                                        to: contractAddressText.innerHTML,
-                                        from: addressSelect.value,
-                                        value: ethInput.value, // 이더 전송할 경우에만 설정
+                                        // to: contractAddressText.innerHTML,
+                                        // from: addressSelect.value,
+                                        // value: ethInput.value, // 이더 전송할 경우에만 설정
                                     };
 
                                     if (isPayable) {
                                         // payable function
+                                        console.log("deploy_result.ejs - function button click - classname ---", actionElement.className);
                                         contract.methods[name](...args).send(transactionObject);
                                     } else if (isNonpayable) {
                                         // nonpayable function
+                                        console.log("deploy_result.ejs - function button click - classname ---", actionElement.className);
                                         contract.methods[name](...args).send(transactionObject);
                                     }
                                 } else {
                                     // pure, view function
+                                    console.log("deploy_result.ejs - function button click - classname ---", actionElement.className);
                                     vscode.postMessage({
                                         type: "call",
                                         value: {
